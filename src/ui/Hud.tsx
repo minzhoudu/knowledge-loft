@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { useWorld } from '@/store/world';
+import { performAction, useWorld, type FocusTarget } from '@/store/world';
 import { enterWorld, isTouchDevice } from '@/world/player/input';
 import { Joystick } from './Joystick';
 import { PanelBody, panelTitle } from './sections';
@@ -23,6 +23,11 @@ export function Hud() {
     const lockFailed = useWorld((s) => s.lockFailed);
     const focused = useWorld((s) => s.focused);
     const openPanel = useWorld((s) => s.openPanel);
+    // Only re-render for the focused door's state, not every door in the world.
+    const focusedDoorOpen = useWorld((s) =>
+        s.focused?.action.kind === 'door' ? !!s.doors[s.focused.action.door] : false,
+    );
+    const verb = focused ? actionVerb(focused, focusedDoorOpen) : '';
     // Decides which controls to describe before the visitor has entered.
     const [touchDevice] = useState(isTouchDevice);
 
@@ -30,8 +35,7 @@ export function Hud() {
         function onKey(e: KeyboardEvent) {
             const s = useWorld.getState();
             if (e.code === 'KeyE' && s.mode === 'exploring' && s.focused) {
-                s.open(s.focused.panel);
-                document.exitPointerLock();
+                performAction(s.focused.action);
             } else if (e.code === 'Escape' && s.mode === 'reading') {
                 s.close();
             } else if (e.code === 'Escape' && s.mode === 'exploring' && s.look === 'drag') {
@@ -57,7 +61,7 @@ export function Hud() {
                             <kbd className="mr-2 rounded border border-line px-1.5 py-0.5 font-mono text-xs">
                                 E
                             </kbd>
-                            {focused.label}
+                            {verb} · {focused.label}
                         </div>
                     )}
 
@@ -74,10 +78,10 @@ export function Hud() {
                             {focused && (
                                 <button
                                     type="button"
-                                    onClick={() => useWorld.getState().open(focused.panel)}
+                                    onClick={() => performAction(focused.action)}
                                     className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+48px)] right-[max(24px,env(safe-area-inset-right,0px))] max-w-[45vw] rounded-2xl bg-accent px-5 py-3 text-left text-sm font-semibold text-black shadow-lg"
                                 >
-                                    Inspect
+                                    {verb}
                                     <span className="block text-xs font-normal opacity-80">
                                         {focused.label}
                                     </span>
@@ -187,6 +191,11 @@ export function Hud() {
             )}
         </>
     );
+}
+
+function actionVerb(target: FocusTarget, doorOpen: boolean) {
+    if (target.action.kind === 'door') return doorOpen ? 'Close' : 'Open';
+    return 'Inspect';
 }
 
 function Key({ children }: { children: React.ReactNode }) {

@@ -1,0 +1,155 @@
+'use client';
+
+import { Grid } from '@react-three/drei';
+import { RigidBody } from '@react-three/rapier';
+import { companies } from '@/content';
+import { Block, GREY } from '@/world/greybox/Block';
+import { Label } from '@/world/greybox/Label';
+import { Interactable } from '@/world/interaction/Interactable';
+import { DOOR, layoutStations, roomFor, type Station } from './layout';
+
+// Content is static, so the room's shape and stations are computed once.
+const ROOM = roomFor(companies.length);
+const STATIONS = layoutStations(companies, ROOM);
+const EARLIEST_YEAR = companies.length ? companies[companies.length - 1].start.slice(0, 4) : '';
+
+const { x0, x1, z0, z1, height: H, wall: T } = ROOM;
+const CX = (x0 + x1) / 2;
+const CZ = (z0 + z1) / 2;
+const W = x1 - x0;
+const L = z1 - z0;
+const LIGHT_COUNT = Math.max(2, Math.round(L / 6));
+
+/**
+ * Greybox Career corridor: a walk back through time. Each role is a station
+ * on the wall with a year marker on the floor, joined by a timeline line
+ * down the middle. Stations, length and lights all come from content.
+ */
+export function CareerRoom() {
+    return (
+        <group>
+            <RigidBody type="fixed" colliders="cuboid">
+                {/* floor + ceiling; the south edge stops at the shared lobby wall */}
+                <Block
+                    size={[W + T * 2, 0.2, L + T]}
+                    position={[CX, -0.1, CZ - T / 2]}
+                    color={GREY.floor}
+                />
+                <Block
+                    size={[W + T * 2, 0.2, L + T]}
+                    position={[CX, H + 0.1, CZ - T / 2]}
+                    color={GREY.ceiling}
+                />
+
+                {/* west, east and north walls; the south wall is the lobby's */}
+                <Block
+                    size={[T, H, L + T]}
+                    position={[x0 - T / 2, H / 2, CZ - T / 2]}
+                    color={GREY.wall}
+                />
+                <Block
+                    size={[T, H, L + T]}
+                    position={[x1 + T / 2, H / 2, CZ - T / 2]}
+                    color={GREY.wall}
+                />
+                <Block
+                    size={[W + T * 2, H, T]}
+                    position={[CX, H / 2, z0 - T / 2]}
+                    color={GREY.wall}
+                />
+
+                {STATIONS.map((s) => (
+                    <StationPanel key={s.company.slug} station={s} />
+                ))}
+            </RigidBody>
+
+            {/* the timeline: a line down the middle, with a tick and a year at each station */}
+            <Block size={[0.06, 0.01, L - 1]} position={[CX, 0.006, CZ]} color={GREY.dark} />
+            {STATIONS.map(({ company, position: [, , z], side }) => (
+                <group key={company.slug}>
+                    <Block
+                        size={[W * 0.6, 0.01, 0.06]}
+                        position={[CX, 0.007, z]}
+                        color={GREY.dark}
+                    />
+                    <Label
+                        title={company.start.slice(0, 4)}
+                        width={0.9}
+                        position={[CX + (side === 'west' ? -0.9 : 0.9), 0.012, z + 0.4]}
+                        flat
+                    />
+                </group>
+            ))}
+
+            {/* wall labels (no physics) */}
+            {STATIONS.map(({ company, position, rotationY }) => (
+                <group key={company.slug} position={position} rotation-y={rotationY}>
+                    <Label
+                        title={company.name}
+                        subtitle={company.role}
+                        width={1.8}
+                        position={[0, 1.95, 0.06]}
+                    />
+                </group>
+            ))}
+            <Label
+                title="Career"
+                subtitle={EARLIEST_YEAR ? `${EARLIEST_YEAR} → now` : undefined}
+                width={2.4}
+                position={[CX, 2.6, z0 + 0.01]}
+            />
+            <Label
+                title="Lobby"
+                width={1.1}
+                position={[DOOR.center, DOOR.height + 0.35, z1 - 0.01]}
+                rotationY={Math.PI}
+            />
+
+            {/* ceiling lights every ~6 m: the corridor has no windows */}
+            {Array.from({ length: LIGHT_COUNT }, (_, i) => {
+                const z = z1 - ((i + 0.5) * L) / LIGHT_COUNT;
+                return (
+                    <pointLight
+                        key={i}
+                        position={[CX, H - 0.6, z]}
+                        intensity={12}
+                        distance={0}
+                        decay={2}
+                    />
+                );
+            })}
+
+            <Grid
+                args={[W, L]}
+                position={[CX, 0.002, CZ]}
+                cellSize={0.5}
+                cellThickness={0.5}
+                cellColor="#9ea3a8"
+                sectionSize={1}
+                sectionThickness={1}
+                sectionColor="#80868c"
+                fadeDistance={40}
+            />
+        </group>
+    );
+}
+
+/** A role on the wall: an inspectable panel that opens the company details. */
+function StationPanel({ station }: { station: Station }) {
+    const { company, position, rotationY } = station;
+    return (
+        <group position={position} rotation-y={rotationY}>
+            <Interactable
+                id={`company:${company.slug}`}
+                label={`${company.name} · ${company.role}`}
+                action={{ kind: 'panel', panel: { kind: 'company', slug: company.slug } }}
+            >
+                <Block
+                    size={[2.3, 1.5, 0.05]}
+                    position={[0, 1.95, 0.025]}
+                    color={GREY.interactive}
+                />
+            </Interactable>
+        </group>
+    );
+}

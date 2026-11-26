@@ -132,7 +132,7 @@ function Exhibit({ slot }: { slot: ExhibitSlot }) {
             <Interactable
                 id={`project:${project.slug}`}
                 label={`Exhibit · ${project.title}`}
-                panel={{ kind: 'project', slug: project.slug }}
+                action={{ kind: 'panel', panel: { kind: 'project', slug: project.slug } }}
             >
                 <Block size={[0.6, 1.0, 0.6]} position={[0, 0.5, 0]} color={I} />
                 <Block size={[0.35, 0.35, 0.35]} position={[0, 1.18, 0]} color="#e9d2b8" />
@@ -150,7 +150,7 @@ function FeaturedPodium() {
             <Interactable
                 id={`project:${featured.slug}`}
                 label={`Featured · ${featured.title}`}
-                panel={{ kind: 'project', slug: featured.slug }}
+                action={{ kind: 'panel', panel: { kind: 'project', slug: featured.slug } }}
             >
                 <Block size={[1.8, 0.25, 1.8]} position={[0, 0.125, 0]} color={I} />
                 <Block size={[0.9, 0.9, 0.9]} position={[0, 0.7, 0]} color={I} />

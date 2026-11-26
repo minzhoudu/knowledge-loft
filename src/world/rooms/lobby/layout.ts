@@ -19,9 +19,10 @@ export const ROOM = {
 export const WINDOW = { x0: -5.6, x1: 5.6, y0: 0.55, y1: 3.75 } as const;
 
 export const DOORS = {
-    // `open: false` = the room behind isn't built yet, so the doorway is blocked.
-    projects: { wall: 'left', center: 1.6, width: 1.3, height: 2.4, open: true },
-    career: { wall: 'back', center: 5.4, width: 1.3, height: 2.4, open: false },
+    // `built: false` = the room behind doesn't exist yet, so the doorway is blocked.
+    // Built rooms get a real door that the player opens and closes.
+    projects: { wall: 'left', center: 1.6, width: 1.3, height: 2.4, built: true },
+    career: { wall: 'back', center: 5.4, width: 1.3, height: 2.4, built: true },
 } as const;
 
 type Vec3 = [number, number, number];

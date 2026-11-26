@@ -3,11 +3,15 @@
 import { useThree } from '@react-three/fiber';
 import { useEffect, useRef } from 'react';
 import type { DirectionalLight } from 'three';
+import { WORLD_BOUNDS as B } from '@/world/rooms/bounds';
 
-// The sun aims at the middle of the built area (lobby + projects room).
-const SUN_TARGET: [number, number, number] = [-6, 0, 0];
-const SUN_OFFSET: [number, number, number] = [5.5, 6.5, 14]; // direction the light comes from
-const SHADOW_HALF_SIZE = 15; // metres: covers both rooms
+// Aim the sun at the middle of everything that's built.
+const CENTER: [number, number, number] = [(B.minX + B.maxX) / 2, 0, (B.minZ + B.maxZ) / 2];
+// Half the floor plan's diagonal: a box this size covers the whole plan from
+// any light direction, since no point is farther than that from the centre.
+const HALF_SIZE = Math.hypot(B.maxX - B.minX, B.maxZ - B.minZ) / 2 + 1;
+const SUN_OFFSET: [number, number, number] = [5.5, 6.5, 14]; // the direction sunlight comes from
+const SUN_DISTANCE = Math.hypot(...SUN_OFFSET);
 
 /**
  * Greybox lighting: just enough to read shapes.
@@ -17,9 +21,9 @@ const SHADOW_HALF_SIZE = 15; // metres: covers both rooms
  * A directional light's shadows are rendered by an orthographic camera that
  * looks from the light toward its target. Only things inside that camera's
  * box get shadows; anything outside is lit as if nothing blocked the sun.
- * That's why the box must cover every room: without it, the windowless
- * Projects room would be fully sunlit through its own ceiling. The bigger the
- * box, the more metres each shadow-map pixel covers, so it's no bigger than needed.
+ * The box must cover every room, or windowless rooms would be sunlit through
+ * their ceilings. A bigger box spreads the same shadow-map pixels over more
+ * metres, so it's computed from the rooms' bounds rather than guessed.
  */
 export function Lighting() {
     const light = useRef<DirectionalLight>(null);
@@ -29,7 +33,7 @@ export function Lighting() {
         const sun = light.current;
         if (!sun) return;
         // The target is an Object3D; it must be in the scene for its matrix to update.
-        sun.target.position.set(...SUN_TARGET);
+        sun.target.position.set(...CENTER);
         const { scene } = get();
         scene.add(sun.target);
         return () => {
@@ -37,16 +41,16 @@ export function Lighting() {
         };
     }, [get]);
 
-    const s = SHADOW_HALF_SIZE;
+    const s = HALF_SIZE;
     return (
         <>
             <hemisphereLight args={['#e8eef5', '#8a8178', 2.0]} />
             <directionalLight
                 ref={light}
                 position={[
-                    SUN_TARGET[0] + SUN_OFFSET[0],
-                    SUN_TARGET[1] + SUN_OFFSET[1],
-                    SUN_TARGET[2] + SUN_OFFSET[2],
+                    CENTER[0] + SUN_OFFSET[0],
+                    CENTER[1] + SUN_OFFSET[1],
+                    CENTER[2] + SUN_OFFSET[2],
                 ]}
                 intensity={2.4}
                 castShadow
@@ -57,8 +61,8 @@ export function Lighting() {
                 shadow-camera-right={s}
                 shadow-camera-top={s}
                 shadow-camera-bottom={-s}
-                shadow-camera-near={1}
-                shadow-camera-far={45}
+                shadow-camera-near={0.5}
+                shadow-camera-far={SUN_DISTANCE + s + 5}
             />
         </>
     );

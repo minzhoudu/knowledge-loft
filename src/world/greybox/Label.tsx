@@ -12,6 +12,8 @@ type Props = {
     width?: number;
     position: Vec3;
     rotationY?: number;
+    /** Lay the label flat on the floor (reads correctly when walking toward -z after rotationY). */
+    flat?: boolean;
     tone?: 'dark' | 'light';
 };
 
@@ -31,6 +33,7 @@ export function Label({
     width = 1.4,
     position,
     rotationY = 0,
+    flat = false,
     tone = 'dark',
 }: Props) {
     // Canvas text is drawn once, so wait for the web fonts or it would bake in a fallback font.
@@ -53,7 +56,8 @@ export function Label({
     if (!label) return null;
     const { texture, aspect } = label;
     return (
-        <mesh position={position} rotation-y={rotationY}>
+        // Euler order 'YXZ': turn to face rotationY first, then tip back onto the floor.
+        <mesh position={position} rotation={[flat ? -Math.PI / 2 : 0, rotationY, 0, 'YXZ']}>
             <planeGeometry args={[width, width / aspect]} />
             <meshBasicMaterial map={texture} transparent toneMapped={false} />
         </mesh>

@@ -2,10 +2,10 @@
 
 import { createContext, useContext, useEffect, useRef, type ReactNode } from 'react';
 import type { Group } from 'three';
-import { useWorld, type FocusTarget, type Panel } from '@/store/world';
+import { useWorld, type Action, type FocusTarget } from '@/store/world';
 
 /**
- * Objects the player can look at and inspect.
+ * Objects the player can look at and use.
  *
  * Each Interactable registers its group in a module-level registry. The
  * InteractionSystem raycasts only against registered objects, which is far
@@ -22,29 +22,29 @@ type Props = {
     /** Unique in the whole world, e.g. "lobby-desk" or "project:my-app". */
     id: string;
     label: string;
-    /** What opens when the player inspects this object. */
-    panel: Panel;
+    /** What happens when the player uses this object. */
+    action: Action;
     children: ReactNode;
 };
 
-export function Interactable({ id, label, panel, children }: Props) {
+export function Interactable({ id, label, action, children }: Props) {
     const ref = useRef<Group>(null);
     const focused = useWorld((s) => s.focused?.id === id);
 
-    // Depend on the panel's contents, not the object identity: an inline
-    // `panel={{ ... }}` prop is a new object on every render.
-    const panelKey = JSON.stringify(panel);
+    // Depend on the action's contents, not the object identity: an inline
+    // `action={{ ... }}` prop is a new object on every render.
+    const actionKey = JSON.stringify(action);
 
     useEffect(() => {
         const group = ref.current;
         if (!group) return;
-        const target: FocusTarget = { id, label, panel: JSON.parse(panelKey) as Panel };
+        const target: FocusTarget = { id, label, action: JSON.parse(actionKey) as Action };
         group.userData.interactable = target;
         interactables.set(id, group);
         return () => {
             interactables.delete(id);
         };
-    }, [id, label, panelKey]);
+    }, [id, label, actionKey]);
 
     return (
         <group ref={ref}>

@@ -19,6 +19,8 @@ export function panelTitle(panel: Panel) {
             return SECTION_TITLES[panel.id];
         case 'project':
             return projects.find((p) => p.slug === panel.slug)?.title ?? 'Project';
+        case 'company':
+            return companies.find((c) => c.slug === panel.slug)?.name ?? 'Company';
     }
 }
 
@@ -28,7 +30,22 @@ export function PanelBody({ panel }: { panel: Panel }) {
             return <Section id={panel.id} />;
         case 'project':
             return <ProjectDetail slug={panel.slug} />;
+        case 'company':
+            return <CompanyDetail slug={panel.slug} />;
     }
+}
+
+function CompanyDetail({ slug }: { slug: string }) {
+    const c = companies.find((x) => x.slug === slug);
+    if (!c) return <p className="text-muted">This role no longer exists.</p>;
+    return (
+        <div className="flex flex-col gap-3">
+            <p className="font-semibold">{c.role}</p>
+            <p className="text-sm text-muted tabular-nums">{formatRange(c.start, c.end)}</p>
+            <p className="leading-relaxed">{c.summary}</p>
+            {c.skills.length > 0 && <Tags items={c.skills} />}
+        </div>
+    );
 }
 
 function ProjectDetail({ slug }: { slug: string }) {

@@ -11,6 +11,7 @@ import { Lighting } from '@/world/Lighting';
 import { DragLook } from '@/world/player/DragLook';
 import { Player } from '@/world/player/Player';
 import { keyMap } from '@/world/player/controls';
+import { CareerRoom } from '@/world/rooms/career/CareerRoom';
 import { Lobby } from '@/world/rooms/lobby/Lobby';
 import { ProjectsRoom } from '@/world/rooms/projects/ProjectsRoom';
 
@@ -39,6 +40,7 @@ export default function Experience() {
                         <Physics debug={debug}>
                             <Lobby />
                             <ProjectsRoom />
+                            <CareerRoom />
                             <Player />
                         </Physics>
                     </Suspense>

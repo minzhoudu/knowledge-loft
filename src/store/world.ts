@@ -31,10 +31,20 @@ export type SectionId = 'about' | 'projects' | 'career' | 'hobbies';
  * TypeScript (and the renderer) which other fields exist, so adding a new kind
  * of panel later (a company, a hobby) is a type error until it's handled.
  */
-export type Panel = { kind: 'section'; id: SectionId } | { kind: 'project'; slug: string };
+export type Panel =
+    | { kind: 'section'; id: SectionId }
+    | { kind: 'project'; slug: string }
+    | { kind: 'company'; slug: string };
+
+/**
+ * What happens when the player uses an interactable: open a content panel,
+ * or toggle a door. Plain data (no functions), so it's easy to store,
+ * compare and log.
+ */
+export type Action = { kind: 'panel'; panel: Panel } | { kind: 'door'; door: string };
 
 /** The interactable the crosshair is on. `id` is unique per object in the world. */
-export type FocusTarget = { id: string; label: string; panel: Panel };
+export type FocusTarget = { id: string; label: string; action: Action };
 
 type WorldState = {
     mode: Mode;
@@ -45,11 +55,14 @@ type WorldState = {
     lockFailed: boolean;
     focused: FocusTarget | null;
     openPanel: Panel | null;
+    /** Door id -> open? Doors not listed are closed. */
+    doors: Record<string, boolean>;
     setMode: (mode: Mode) => void;
     set: (partial: Partial<Pick<WorldState, 'look' | 'touch' | 'lockFailed' | 'mode'>>) => void;
     setFocused: (focused: FocusTarget | null) => void;
     open: (panel: Panel) => void;
     close: () => void;
+    toggleDoor: (door: string) => void;
 };
 
 export const useWorld = create<WorldState>((set) => ({
@@ -59,12 +72,28 @@ export const useWorld = create<WorldState>((set) => ({
     lockFailed: false,
     focused: null,
     openPanel: null,
+    doors: {},
     setMode: (mode) => set({ mode }),
     set: (partial) => set(partial),
     setFocused: (focused) => set({ focused }),
     open: (panel) => set({ openPanel: panel, mode: 'reading', focused: null }),
     close: () => set({ openPanel: null, mode: 'paused' }),
+    toggleDoor: (door) => set((s) => ({ doors: { ...s.doors, [door]: !s.doors[door] } })),
 }));
+
+/**
+ * Run an interactable's action. Opening a panel releases the mouse so the
+ * visitor can click links; a door just toggles and play continues.
+ */
+export function performAction(action: Action) {
+    const s = useWorld.getState();
+    if (action.kind === 'door') {
+        s.toggleDoor(action.door);
+    } else {
+        s.open(action.panel);
+        if (document.pointerLockElement) document.exitPointerLock();
+    }
+}
 
 // Dev-only handle for poking at state from the browser console, e.g.
 // __world.getState().setMode("exploring")

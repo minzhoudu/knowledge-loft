@@ -4,6 +4,7 @@ import { Grid } from '@react-three/drei';
 import { CuboidCollider, RigidBody } from '@react-three/rapier';
 import { DoubleSide } from 'three';
 import { Block, GREY } from '@/world/greybox/Block';
+import { Door } from '@/world/greybox/Door';
 import { Label } from '@/world/greybox/Label';
 import { Interactable } from '@/world/interaction/Interactable';
 import { DOORS, MARKERS, ROOM, WINDOW } from './layout';
@@ -86,15 +87,26 @@ export function Lobby() {
                 position={[0, (WINDOW.y0 + WINDOW.y1) / 2, Z + T / 2]}
             />
 
-            {/* doorways: a sign above each; closed ones get a blocker and a dark fill */}
+            {/* doorways: a sign above each. Built rooms get a real door that swings
+                into the new room; unbuilt ones get a blocker and a dark fill. */}
             <Label
                 title="Projects"
-                subtitle={left.open ? undefined : 'Coming soon'}
+                subtitle={left.built ? undefined : 'Coming soon'}
                 width={1.3}
                 position={[-X + 0.01, left.height + 0.35, left.center]}
                 rotationY={Math.PI / 2}
             />
-            {!left.open && (
+            {left.built ? (
+                <Door
+                    id="lobby-projects"
+                    label="Door · Projects"
+                    hinge={[-X - T / 2, lz0]}
+                    rotationY={-Math.PI / 2} // hinge → latch runs along +z
+                    swing={-1} // opens toward -x, into the Projects room
+                    width={left.width}
+                    height={left.height}
+                />
+            ) : (
                 <ClosedDoor
                     position={[-X - T / 2, left.height / 2, left.center]}
                     rotationY={Math.PI / 2}
@@ -104,11 +116,21 @@ export function Lobby() {
             )}
             <Label
                 title="Career"
-                subtitle={back.open ? undefined : 'Coming soon'}
+                subtitle={back.built ? undefined : 'Coming soon'}
                 width={1.3}
                 position={[back.center, back.height + 0.4, -Z + 0.01]}
             />
-            {!back.open && (
+            {back.built ? (
+                <Door
+                    id="lobby-career"
+                    label="Door · Career"
+                    hinge={[bx0, -Z - T / 2]}
+                    rotationY={0} // hinge → latch runs along +x
+                    swing={1} // opens toward -z, into the Career corridor
+                    width={back.width}
+                    height={back.height}
+                />
+            ) : (
                 <ClosedDoor
                     position={[back.center, back.height / 2, -Z - T / 2]}
                     rotationY={0}
@@ -218,7 +240,7 @@ function Furniture() {
             <Interactable
                 id="lobby-desk"
                 label="Desk · About me"
-                panel={{ kind: 'section', id: 'about' }}
+                action={{ kind: 'panel', panel: { kind: 'section', id: 'about' } }}
             >
                 <Block size={[1.9, 0.04, 0.8]} position={[dx, 0.74, dz]} color={I} />
                 <Block size={[0.04, 0.72, 0.7]} position={[dx - 0.85, 0.36, dz]} color={I} />
@@ -235,7 +257,7 @@ function Furniture() {
             <Interactable
                 id="lobby-shelf"
                 label="Bookshelf · Hobbies"
-                panel={{ kind: 'section', id: 'hobbies' }}
+                action={{ kind: 'panel', panel: { kind: 'section', id: 'hobbies' } }}
             >
                 <Block size={[0.03, 2.5, 0.38]} position={[sx - 1.2, 1.25, sz]} color={I} />
                 <Block size={[0.03, 2.5, 0.38]} position={[sx + 1.2, 1.25, sz]} color={I} />
@@ -248,7 +270,7 @@ function Furniture() {
             <Interactable
                 id="lobby-screen"
                 label="Screen · Career"
-                panel={{ kind: 'section', id: 'career' }}
+                action={{ kind: 'panel', panel: { kind: 'section', id: 'career' } }}
             >
                 <Block size={[2.36, 1.38, 0.05]} position={[ex, ey, ez]} color={I} />
             </Interactable>
@@ -257,7 +279,7 @@ function Furniture() {
             <Interactable
                 id="lobby-plinth"
                 label="Exhibit · All projects"
-                panel={{ kind: 'section', id: 'projects' }}
+                action={{ kind: 'panel', panel: { kind: 'section', id: 'projects' } }}
             >
                 <Block size={[0.62, 1.05, 0.62]} position={[px, 0.525, pz]} color={I} />
                 <Block size={[0.5, 0.5, 0.5]} position={[px, 1.33, pz]} color="#e9d2b8" />
