@@ -375,12 +375,16 @@ const PLANTS = ['monstera', 'plant-pot', 'plant-tall'] as const;
 
 /**
  * Book sets on the steel shelves: [x offset from the shelf's centre, board height].
- * Board heights read from the model's geometry (vertex heights cluster at each board).
+ *
+ * The two halves have boards at different heights. Measured by probing the
+ * model straight down at each x for upward-facing surfaces:
+ *   left  (x < 0): 0.66 (top of the drawers), 1.32, 2.30 (top)
+ *   right (x > 0): 0.66, 1.09, 1.75, 2.30
  */
-const SHELF_TOP = 2.32;
+const SHELF_TOP = 2.3;
 const SHELF_BOOKS: [number, number][] = [
-    [-0.5, 0.67],
+    [-0.5, 0.66],
+    [-0.45, 1.32],
     [0.5, 1.09],
-    [-0.45, 1.75],
     [0.55, 1.75],
 ];
