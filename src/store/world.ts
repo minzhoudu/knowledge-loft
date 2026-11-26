@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { releaseMouse } from '@/world/player/input';
 import type { LightingMode, SeasonMode } from '@/world/environment/time';
 import type { LiveWeather, WeatherMode } from '@/world/environment/weather';
+import type { GithubData } from '@/world/github/types';
 
 /**
  * Global world state.
@@ -39,7 +40,9 @@ export type Panel =
     | { kind: 'project'; slug: string }
     | { kind: 'company'; slug: string }
     | { kind: 'hobby'; slug: string }
-    | { kind: 'skill'; slug: string };
+    | { kind: 'skill'; slug: string }
+    | { kind: 'github' }
+    | { kind: 'repo'; name: string };
 
 /**
  * What happens when the player uses an interactable: open a content panel,
@@ -83,6 +86,9 @@ type WorldState = {
     /** Latest live weather from /api/weather (null until loaded, or if unavailable). */
     liveWeather: LiveWeather | null;
     setLiveWeather: (w: LiveWeather | null) => void;
+    /** Latest data from /api/github (null until loaded, or if unavailable). */
+    github: GithubData | null;
+    setGithub: (g: GithubData | null) => void;
     /** Sound off. Remembered in this browser between visits. */
     muted: boolean;
     toggleMuted: () => void;
@@ -120,6 +126,8 @@ export const useWorld = create<WorldState>((set) => ({
     setWeather: (weather) => set({ weather }),
     liveWeather: null,
     setLiveWeather: (liveWeather) => set({ liveWeather }),
+    github: null,
+    setGithub: (github) => set({ github }),
     muted: readMuted(),
     toggleMuted: () =>
         set((s) => {

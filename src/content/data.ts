@@ -14,6 +14,7 @@ export const about = {
         { label: 'GitHub', href: 'https://github.com/minzhoudu' },
         { label: 'LinkedIn', href: 'https://www.linkedin.com/in/jovanovixp/' },
     ],
+    github: 'minzhoudu',
 };
 
 export const projects = [

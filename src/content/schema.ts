@@ -90,6 +90,11 @@ export const AboutSchema = z.object({
         .optional(),
     bio: z.string().min(1),
     links: z.array(LinkSchema).default([]),
+    /** GitHub username: powers the live GitHub wall in the Projects gallery. */
+    github: z
+        .string()
+        .regex(/^[a-z\d](?:[a-z\d-]{0,38})$/i, 'Not a valid GitHub username')
+        .optional(),
 });
 
 export type Project = z.infer<typeof ProjectSchema>;

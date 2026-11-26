@@ -11,6 +11,7 @@ import {
     type SkillCategory,
 } from '@/content';
 import type { Panel, SectionId } from '@/store/world';
+import { GithubPanel, RepoPanel } from './github';
 
 /**
  * Content sections shared by the 3D panels and the 2D quick view.
@@ -37,6 +38,10 @@ export function panelTitle(panel: Panel) {
             return hobbies.find((h) => h.slug === panel.slug)?.name ?? 'Hobby';
         case 'skill':
             return skillName(panel.slug);
+        case 'github':
+            return 'GitHub';
+        case 'repo':
+            return panel.name;
     }
 }
 
@@ -52,6 +57,10 @@ export function PanelBody({ panel }: { panel: Panel }) {
             return <HobbyDetail slug={panel.slug} />;
         case 'skill':
             return <SkillDetail slug={panel.slug} />;
+        case 'github':
+            return <GithubPanel />;
+        case 'repo':
+            return <RepoPanel name={panel.name} />;
     }
 }
 

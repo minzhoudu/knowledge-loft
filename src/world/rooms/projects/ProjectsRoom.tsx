@@ -4,6 +4,7 @@ import { RigidBody } from '@react-three/rapier';
 import { projects } from '@/content';
 import { Block } from '@/world/greybox/Block';
 import { Label } from '@/world/greybox/Label';
+import { GithubWall } from '@/world/github/GithubWall';
 import { Interactable } from '@/world/interaction/Interactable';
 import { CENTER, DOOR, layoutExhibits, ROOM, type ExhibitSlot } from './layout';
 
@@ -78,13 +79,16 @@ export function ProjectsRoom() {
                     rotationY={Math.PI / 2}
                 />
             )}
+            {/* the gallery's sign hangs just inside the entrance, facing you as you come in */}
             <Label
                 title="Projects"
                 subtitle={`${projects.length} ${projects.length === 1 ? 'project' : 'projects'}`}
-                width={2.6}
-                position={[x0 + 0.01, 2.7, CENTER.z]}
+                width={2.2}
+                position={[x1 - 1.2, 3.55, CENTER.z]}
                 rotationY={Math.PI / 2}
             />
+            {/* the far wall: live GitHub activity */}
+            <GithubWall position={[x0 + 0.01, 0, CENTER.z]} rotationY={Math.PI / 2} />
             <Label
                 title="Lobby"
                 width={1.1}

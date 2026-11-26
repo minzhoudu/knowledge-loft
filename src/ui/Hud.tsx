@@ -13,6 +13,7 @@ import {
     toggleFullscreen,
 } from '@/world/player/input';
 import { Clock, EnvironmentControls, useWeatherFeed } from './Clock';
+import { useGithubFeed } from './github';
 import { Joystick } from './Joystick';
 import { PanelBody, panelTitle } from './sections';
 
@@ -40,6 +41,7 @@ export function Hud() {
     );
     const verb = focused ? actionVerb(focused, focusedDoorOpen) : '';
     useWeatherFeed();
+    useGithubFeed();
     // Decides which controls to describe before the visitor has entered.
     const [touchDevice] = useState(isTouchDevice);
 
