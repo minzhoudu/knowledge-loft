@@ -62,6 +62,36 @@ export const SkillSchema = z.object({
     category: z.enum(Object.keys(SKILL_CATEGORIES) as [SkillCategory, ...SkillCategory[]]),
 });
 
+/** What each line of the "currently" board is about. */
+export const CURRENTLY_KINDS = {
+    building: 'Building',
+    working: 'Working on',
+    learning: 'Learning',
+    reading: 'Reading',
+    playing: 'Playing',
+    listening: 'Listening to',
+} as const;
+export type CurrentlyKind = keyof typeof CURRENTLY_KINDS;
+
+export const CurrentlySchema = z.object({
+    /** When you last updated the board (YYYY-MM-DD); shown so visitors know it's fresh. */
+    updated: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use YYYY-MM-DD'),
+    items: z
+        .array(
+            z.object({
+                kind: z.enum(Object.keys(CURRENTLY_KINDS) as [CurrentlyKind, ...CurrentlyKind[]]),
+                /** Short: it's spelled out in letters on the board. */
+                title: z.string().min(1).max(32),
+                detail: z.string().optional(),
+                link: LinkSchema.optional(),
+                /** A GitHub repo name: the board then shows when it was last pushed, live. */
+                repo: z.string().optional(),
+            }),
+        )
+        .min(1)
+        .max(6),
+});
+
 export const AboutSchema = z.object({
     name: z.string().min(1),
     headline: z.string().min(1),
@@ -102,3 +132,4 @@ export type Company = z.infer<typeof CompanySchema>;
 export type Hobby = z.infer<typeof HobbySchema>;
 export type About = z.infer<typeof AboutSchema>;
 export type Skill = z.infer<typeof SkillSchema>;
+export type Currently = z.infer<typeof CurrentlySchema>;

@@ -1,6 +1,8 @@
 import {
     about,
     companies,
+    currently,
+    CURRENTLY_KINDS,
     formatRange,
     hobbies,
     projects,
@@ -20,6 +22,7 @@ import { GithubPanel, RepoPanel } from './github';
 
 export const SECTION_TITLES: Record<SectionId, string> = {
     about: 'About me',
+    currently: 'Currently',
     projects: 'Projects',
     career: 'Career',
     hobbies: 'Hobbies',
@@ -151,6 +154,8 @@ export function Section({ id }: { id: SectionId }) {
     switch (id) {
         case 'about':
             return <AboutSection />;
+        case 'currently':
+            return <CurrentlySection />;
         case 'projects':
             return <ProjectsSection />;
         case 'career':
@@ -172,6 +177,31 @@ function AboutSection() {
             </p>
             <p className="leading-relaxed">{about.bio}</p>
             <LinkRow links={about.links} />
+        </div>
+    );
+}
+
+function CurrentlySection() {
+    const updated = new Date(`${currently.updated}T12:00:00Z`).toLocaleDateString('en-GB', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+    });
+    return (
+        <div className="flex flex-col gap-4">
+            <ul className="flex flex-col gap-4">
+                {currently.items.map((item) => (
+                    <li key={`${item.kind}:${item.title}`} className="flex flex-col gap-1">
+                        <p className="font-mono text-xs uppercase tracking-widest text-muted">
+                            {CURRENTLY_KINDS[item.kind]}
+                        </p>
+                        <p className="font-semibold">{item.title}</p>
+                        {item.detail && <p className="leading-relaxed">{item.detail}</p>}
+                        {item.link && <LinkRow links={[item.link]} />}
+                    </li>
+                ))}
+            </ul>
+            <p className="text-xs text-muted">Updated {updated}.</p>
         </div>
     );
 }

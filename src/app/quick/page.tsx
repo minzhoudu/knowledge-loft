@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     description: about.headline,
 };
 
-const ORDER: SectionId[] = ['about', 'projects', 'career', 'skills', 'hobbies'];
+const ORDER: SectionId[] = ['about', 'currently', 'projects', 'career', 'skills', 'hobbies'];
 
 /**
  * The 2D quick view: same content as the 3D world, as a plain fast page.

@@ -28,7 +28,7 @@ export type Mode =
  */
 export type LookMode = 'pointer-lock' | 'drag';
 
-export type SectionId = 'about' | 'projects' | 'career' | 'hobbies' | 'skills';
+export type SectionId = 'about' | 'currently' | 'projects' | 'career' | 'hobbies' | 'skills';
 
 /**
  * What a content panel shows. A discriminated union: the `kind` field tells

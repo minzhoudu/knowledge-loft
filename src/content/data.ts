@@ -289,3 +289,33 @@ export const skills = [
     { slug: 'stripe', name: 'Stripe', category: 'commerce' },
     { slug: 'google-maps', name: 'Google Maps', category: 'commerce' },
 ] as const;
+
+/**
+ * The "currently" board in the lobby. Keep titles short (they're spelled out
+ * in letters on a felt board) and bump `updated` whenever you change it.
+ */
+export const currently = {
+    updated: '2026-11-26',
+    items: [
+        {
+            kind: 'building',
+            title: 'Knowledge Loft',
+            detail: 'This place: a walkable 3D portfolio with real sun, live weather and GitHub data. Next up, an AI guide.',
+            link: {
+                label: 'Source on GitHub',
+                href: 'https://github.com/minzhoudu/knowledge-loft',
+            },
+            repo: 'knowledge-loft',
+        },
+        {
+            kind: 'working',
+            title: 'Florbs',
+            detail: 'Leading frontend on a Google Workspace security and automation platform.',
+        },
+        {
+            kind: 'learning',
+            title: '3D, shaders & AI agents',
+            detail: 'three.js and GLSL for this loft, and building LLM features into real products.',
+        },
+    ],
+};
