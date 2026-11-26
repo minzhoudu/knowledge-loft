@@ -162,7 +162,7 @@ export const companies = [
         name: 'nQode Solutions',
         role: 'Full stack engineer',
         start: '2024-03',
-        end: '2025-03',
+        end: '2025-04',
         summary:
             'Client work, mostly on Source, a greenhouse analytics platform: real-time sensor data, yield prediction and comparisons, built with Next.js, GraphQL and NestJS.',
         skills: ['nextjs', 'graphql', 'nestjs', 'typescript'],
@@ -192,15 +192,36 @@ export const companies = [
         name: 'Freelance',
         role: 'Full stack developer',
         start: '2020-01',
-        end: '2021-06',
+        end: null,
         summary:
-            'Where it started: booking apps for a hair studio and a bus company, and a face recognition app with a rewards scheme, built with React, Next.js and Express.',
+            'Where it started, and still going alongside the day job: booking apps for a hair studio and a bus company, a face recognition app with a rewards scheme, and client work since, built with React, Next.js and Express.',
         skills: ['react', 'nextjs', 'express', 'mysql'],
     },
 ];
 
-// Not in the CV yet: placeholders until you tell me what goes here.
 export const hobbies = [
-    { slug: 'hobby-one', name: 'Hobby one', summary: 'Why you love it, in a sentence.' },
-    { slug: 'hobby-two', name: 'Hobby two', summary: 'Why you love it, in a sentence.' },
+    {
+        slug: 'learning-and-ai',
+        name: 'Code, languages and AI',
+        summary:
+            "Programming doesn't stop when work does. I pick up new languages for the fun of seeing how they think, and I follow what's new in AI closely: what models can do now, and how to build them into real systems in ways that actually help.",
+    },
+    {
+        slug: 'scuba-diving',
+        name: 'Scuba diving',
+        summary:
+            "A certified diver with more than eight years underwater. Diving is the one place my phone can't follow me: slow breathing, total focus, and a world that looks nothing like a screen.",
+    },
+    {
+        slug: 'reading',
+        name: 'Reading',
+        summary:
+            'Mostly epic fantasy and spy fiction: The Witcher, A Song of Ice and Fire, James Bond. Long stories with big worlds, sharp politics and characters who have to think their way out.',
+    },
+    {
+        slug: 'co-op-games',
+        name: 'Co-op games with friends',
+        summary:
+            'Survival and co-op games, played with the same group of friends. Building a base together, planning a run, and failing loudly is my favourite kind of teamwork outside work.',
+    },
 ];
