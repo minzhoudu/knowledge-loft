@@ -54,6 +54,18 @@
     }
 }
 
+/* A desk monitor's page appearing as you sit down (world/seats/DeskScreen). */
+@keyframes screen-on {
+    from {
+        opacity: 0;
+        filter: brightness(1.8);
+    }
+    to {
+        opacity: 1;
+        filter: none;
+    }
+}
+
 /* ?perf meter (stats-gl): top right, clear of the HUD clock. */
 .perf-meter {
     position: fixed;

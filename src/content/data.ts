@@ -15,6 +15,7 @@ export const about = {
         { label: 'LinkedIn', href: 'https://www.linkedin.com/in/jovanovixp/' },
     ],
     github: 'minzhoudu',
+    cv: '/cv/pavle-jovanovic-cv.pdf',
 };
 
 export const projects = [

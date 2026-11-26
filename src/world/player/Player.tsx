@@ -120,6 +120,8 @@ export function Player() {
             b.setLinvel({ x: tmp.move.x, y: v.y, z: tmp.move.z }, true);
         }
 
+        // Sitting at a screen: SeatCamera moves the camera instead (the body stays put).
+        if (useWorld.getState().seat) return;
         camera.position.set(p.x, p.y + EYE_OFFSET, p.z);
     });
 

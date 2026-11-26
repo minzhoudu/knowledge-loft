@@ -19,7 +19,8 @@ export type Mode =
     | 'intro' // before the first click: show the start screen
     | 'exploring' // walking around
     | 'paused' // stopped (Esc or the pause button), not reading anything
-    | 'reading'; // a content panel is open
+    | 'reading' // a content panel is open
+    | 'seated'; // sitting at a desk, reading its screen (see world/seats)
 
 /**
  * How mouse/finger movement turns the camera:
@@ -44,12 +45,24 @@ export type Panel =
     | { kind: 'github' }
     | { kind: 'repo'; name: string };
 
+/** Places you can sit down at and read a screen (see world/seats/seats.ts). */
+export type SeatId = 'lobby-desk';
+
+/**
+ * Sitting down happens in three steps: the camera glides to the seat
+ * ("arriving"), you read ("seated"), and it glides back ("leaving").
+ */
+export type SeatPhase = 'arriving' | 'seated' | 'leaving';
+
 /**
  * What happens when the player uses an interactable: open a content panel,
- * or toggle a door. Plain data (no functions), so it's easy to store,
- * compare and log.
+ * toggle a door, or sit down at a screen. Plain data (no functions), so it's
+ * easy to store, compare and log.
  */
-export type Action = { kind: 'panel'; panel: Panel } | { kind: 'door'; door: string };
+export type Action =
+    | { kind: 'panel'; panel: Panel }
+    | { kind: 'door'; door: string }
+    | { kind: 'sit'; seat: SeatId };
 
 /** The interactable the crosshair is on. `id` is unique per object in the world. */
 export type FocusTarget = { id: string; label: string; action: Action };
@@ -74,6 +87,13 @@ type WorldState = {
     openPanel: Panel | null;
     /** Door id -> open? Doors not listed are closed. */
     doors: Record<string, boolean>;
+    /** Where you're sitting (null while walking), and how far into sitting down you are. */
+    seat: SeatId | null;
+    seatPhase: SeatPhase | null;
+    sit: (seat: SeatId) => void;
+    /** Start getting up (the camera glides back, then walking resumes). */
+    standUp: () => void;
+    setSeatPhase: (phase: SeatPhase | null) => void;
     /** Real clock, or a fixed daytime/night-time preview. */
     lighting: LightingMode;
     setLighting: (lighting: LightingMode) => void;
@@ -118,6 +138,12 @@ export const useWorld = create<WorldState>((set) => ({
     focused: null,
     openPanel: null,
     doors: {},
+    seat: null,
+    seatPhase: null,
+    sit: (seat) => set({ seat, seatPhase: 'arriving', mode: 'seated', focused: null }),
+    standUp: () =>
+        set((s) => (s.seat && s.seatPhase !== 'leaving' ? { seatPhase: 'leaving' } : {})),
+    setSeatPhase: (seatPhase) => set(seatPhase ? { seatPhase } : { seat: null, seatPhase: null }),
     lighting: 'live',
     setLighting: (lighting) => set({ lighting }),
     season: 'live',
@@ -159,13 +185,17 @@ function writeMuted(muted: boolean) {
 }
 
 /**
- * Run an interactable's action. Opening a panel releases the mouse so the
- * visitor can click links; a door just toggles and play continues.
+ * Run an interactable's action. Opening a panel or sitting down releases the
+ * mouse so the visitor can click links (and scroll the screen); a door just
+ * toggles and play continues.
  */
 export function performAction(action: Action) {
     const s = useWorld.getState();
     if (action.kind === 'door') {
         s.toggleDoor(action.door);
+    } else if (action.kind === 'sit') {
+        s.sit(action.seat);
+        releaseMouse();
     } else {
         s.open(action.panel);
         // Released by us, not by Esc, so closing the panel can capture the mouse

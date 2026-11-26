@@ -40,6 +40,11 @@ export const MARKERS = {
     /** The skill constellation's projector, in the open floor in front of the spawn point. */
     constellation: { position: [2.3, 0, -1.7] as Vec3 },
     coffeeTable: { position: [2.4, 0, 1.65] as Vec3 },
+    /**
+     * The desk monitor's glass (just in front of its bezel, see Lobby.tsx), facing
+     * +z toward the chair. Sitting at the desk frames it and shows a page on it.
+     */
+    deskScreen: { center: [-4.3, 1.2, -4.05 - 0.2 + 0.016] as Vec3, width: 0.92, height: 0.52 },
     plants: [
         [6.45, 0, -4.35],
         [-6.2, 0, 4.25],

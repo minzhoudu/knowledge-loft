@@ -11,6 +11,7 @@ import { Label } from '@/world/greybox/Label';
 import { Lamp } from '@/world/environment/Lamp';
 import { Interactable } from '@/world/interaction/Interactable';
 import { Model } from '@/world/models/Model';
+import { DeskScreen } from '@/world/seats/DeskScreen';
 import { DOORS, MARKERS, ROOM, WINDOW } from './layout';
 
 const { halfWidth: X, halfDepth: Z, height: H, wall: T } = ROOM;
@@ -315,14 +316,16 @@ function Models() {
 
     return (
         <>
-            {/* desk corner: About me. A steel office desk, the chair pulled up to it. */}
+            {/* desk corner: About me. A steel office desk, the chair pulled up to it.
+                Using it sits you down and shows the About page on the monitor. */}
             <Interactable
                 id="lobby-desk"
                 label="Desk · About me"
-                action={{ kind: 'panel', panel: { kind: 'section', id: 'about' } }}
+                action={{ kind: 'sit', seat: 'lobby-desk' }}
             >
                 <Model name="desk" position={[dx, 0, dz]} />
                 <Block size={[0.96, 0.56, 0.03]} position={[dx, 1.2, dz - 0.2]} surface="metal" />
+                <DeskScreen seat="lobby-desk" />
                 <Block size={[0.24, 0.02, 0.18]} position={[dx, 0.8, dz - 0.2]} surface="metal" />
                 <Block size={[0.04, 0.12, 0.04]} position={[dx, 0.87, dz - 0.22]} surface="metal" />
                 <Model

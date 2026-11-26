@@ -35,6 +35,7 @@ export function Hud() {
     const relockOnClick = useWorld((s) => s.relockOnClick);
     const focused = useWorld((s) => s.focused);
     const openPanel = useWorld((s) => s.openPanel);
+    const seatPhase = useWorld((s) => s.seatPhase);
     // Only re-render for the focused door's state, not every door in the world.
     const focusedDoorOpen = useWorld((s) =>
         s.focused?.action.kind === 'door' ? !!s.doors[s.focused.action.door] : false,
@@ -58,6 +59,9 @@ export function Hud() {
             const esc = e.code === 'Escape' && !e.repeat; // holding Esc mustn't toggle the pause over and over
             if (e.code === 'KeyE' && s.mode === 'exploring' && s.focused) {
                 performAction(s.focused.action);
+            } else if (s.mode === 'seated' && (esc || (e.code === 'KeyE' && !e.repeat))) {
+                // Get up from a desk. The glide back ends in resumeFromKey (SeatCamera).
+                s.standUp();
             } else if (e.code === 'KeyM' && !e.repeat) {
                 s.toggleMuted();
             } else if (esc && s.mode === 'reading') {
@@ -239,6 +243,21 @@ export function Hud() {
                 </div>
             )}
 
+            {mode === 'seated' && seatPhase !== 'leaving' && (
+                <button
+                    type="button"
+                    onClick={() => useWorld.getState().standUp()}
+                    className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+24px)] left-1/2 z-30 -translate-x-1/2 rounded-full bg-panel px-4 py-2 text-sm text-fg backdrop-blur hover:text-accent"
+                >
+                    {!touch && (
+                        <kbd className="mr-2 rounded border border-line px-1.5 py-0.5 font-mono text-xs">
+                            Esc
+                        </kbd>
+                    )}
+                    Stand up
+                </button>
+            )}
+
             {mode === 'reading' && openPanel && (
                 <div
                     className="fixed inset-0 flex items-end justify-end bg-black/25 p-4 sm:items-center"
@@ -273,6 +292,7 @@ export function Hud() {
 
 function actionVerb(target: FocusTarget, doorOpen: boolean) {
     if (target.action.kind === 'door') return doorOpen ? 'Close' : 'Open';
+    if (target.action.kind === 'sit') return 'Sit down';
     return 'Inspect';
 }
 

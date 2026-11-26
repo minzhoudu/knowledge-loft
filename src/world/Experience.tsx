@@ -16,6 +16,7 @@ import { CareerRoom } from '@/world/rooms/career/CareerRoom';
 import { HobbiesRoom } from '@/world/rooms/hobbies/HobbiesRoom';
 import { Lobby } from '@/world/rooms/lobby/Lobby';
 import { ProjectsRoom } from '@/world/rooms/projects/ProjectsRoom';
+import { SeatCamera } from '@/world/seats/SeatCamera';
 
 /**
  * The 3D experience. Loaded client-only (see WorldClient), because WebGL,
@@ -59,6 +60,7 @@ export default function Experience() {
                         <Player />
                     </Physics>
                 </Suspense>
+                <SeatCamera />
                 <InteractionSystem />
                 <Ambience />
                 <DragLook />

@@ -176,7 +176,19 @@ function AboutSection() {
                 {about.location ? ` · ${about.location}` : ''}
             </p>
             <p className="leading-relaxed">{about.bio}</p>
-            <LinkRow links={about.links} />
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
+                {about.cv && (
+                    <a
+                        href={about.cv}
+                        // `download` saves the file (under this name) instead of opening it.
+                        download={`${about.name} CV.pdf`}
+                        className="rounded-lg bg-accent px-3 py-1.5 text-sm font-semibold text-black hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                    >
+                        Download CV
+                    </a>
+                )}
+                <LinkRow links={about.links} />
+            </div>
         </div>
     );
 }

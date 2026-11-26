@@ -96,6 +96,8 @@ export const AboutSchema = z.object({
     name: z.string().min(1),
     headline: z.string().min(1),
     location: z.string().optional(),
+    /** A CV file in /public (e.g. "/cv/name.pdf"), offered as "Download CV". */
+    cv: z.string().startsWith('/').optional(),
     /**
      * IANA time zone of the studio, e.g. "Europe/Belgrade". Drives live
      * day/night lighting. Checked against the browser's list of zones.
