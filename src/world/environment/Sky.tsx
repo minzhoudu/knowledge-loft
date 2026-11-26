@@ -21,6 +21,10 @@ export type SkyUniforms = {
     uSunColor: { value: Color };
     uSunStrength: { value: number };
     uStars: { value: number };
+    /** 0 = clear, 1 = fully overcast. */
+    uCloud: { value: number };
+    /** The flat grey of an overcast sky (brighter by day, near-black at night). */
+    uOvercast: { value: Color };
 };
 
 export function createSkyMaterial() {
@@ -32,6 +36,8 @@ export function createSkyMaterial() {
         uSunColor: { value: new Color() },
         uSunStrength: { value: 1 },
         uStars: { value: 0 },
+        uCloud: { value: 0 },
+        uOvercast: { value: new Color() },
     };
     return new ShaderMaterial({
         uniforms,
@@ -53,6 +59,8 @@ export function createSkyMaterial() {
             uniform vec3 uSunColor;
             uniform float uSunStrength;
             uniform float uStars;
+            uniform float uCloud;
+            uniform vec3 uOvercast;
             varying vec3 vWorld;
 
             // Cheap pseudo-random number from a 3D cell: same input, same output.
@@ -72,14 +80,19 @@ export function createSkyMaterial() {
                     ? mix(uHorizon, uTop, pow(h, 0.5))
                     : mix(uHorizon, uGround, pow(-h, 0.4));
 
-                // Sun: a tiny bright disc plus a wide soft halo.
+                // Clouds: blend toward a flat overcast grey (a touch darker below the horizon).
+                vec3 overcast = uOvercast * (h > 0.0 ? 1.0 : 0.8);
+                col = mix(col, overcast, uCloud * 0.92);
+                float clear = 1.0 - uCloud;
+
+                // Sun: a tiny bright disc plus a wide soft halo; clouds hide both.
                 float s = max(dot(dir, uSunDir), 0.0);
-                col += uSunColor * (pow(s, 1500.0) * 10.0 + pow(s, 10.0) * 0.3) * uSunStrength;
+                col += uSunColor * (pow(s, 1500.0) * 10.0 + pow(s, 10.0) * 0.3) * uSunStrength * clear;
 
                 // Stars: split the sky into tiny cells and light up a rare few.
                 if (uStars > 0.0 && h > 0.0) {
                     float star = step(0.9978, hash(floor(dir * 260.0)));
-                    col += vec3(star) * uStars * smoothstep(0.0, 0.25, h);
+                    col += vec3(star) * uStars * clear * smoothstep(0.0, 0.25, h);
                 }
 
                 gl_FragColor = vec4(col, 1.0);

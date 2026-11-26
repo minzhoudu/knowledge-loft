@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { performAction, useWorld, type FocusTarget } from '@/store/world';
 import { enterWorld, isTouchDevice } from '@/world/player/input';
-import { Clock, LightingToggle } from './Clock';
+import { Clock, EnvironmentControls, useWeatherFeed } from './Clock';
 import { Joystick } from './Joystick';
 import { PanelBody, panelTitle } from './sections';
 
@@ -29,6 +29,7 @@ export function Hud() {
         s.focused?.action.kind === 'door' ? !!s.doors[s.focused.action.door] : false,
     );
     const verb = focused ? actionVerb(focused, focusedDoorOpen) : '';
+    useWeatherFeed();
     // Decides which controls to describe before the visitor has entered.
     const [touchDevice] = useState(isTouchDevice);
 
@@ -133,7 +134,7 @@ export function Hud() {
                         >
                             {mode === 'intro' ? 'Enter' : 'Resume'}
                         </button>
-                        <LightingToggle />
+                        <EnvironmentControls />
                         {lockFailed && (
                             <div
                                 className="flex flex-col gap-2 rounded-lg border border-line p-3 text-sm"

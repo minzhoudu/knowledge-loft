@@ -8,6 +8,7 @@ export const about = {
     headline: 'Software engineer',
     location: 'Novi Sad, Serbia',
     timeZone: 'Europe/Belgrade',
+    coordinates: { lat: 45.27, lon: 19.83 }, // Novi Sad (city centre)
     bio: 'Two or three sentences about who you are, what you work on, and what you care about. This text shows up in the 3D world, on the quick view page, and later feeds the AI assistant.',
     links: [
         { label: 'GitHub', href: 'https://github.com/' },

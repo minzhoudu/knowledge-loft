@@ -61,6 +61,13 @@ export const AboutSchema = z.object({
             }
         }, 'Unknown time zone; use an IANA name like "Europe/Belgrade"')
         .optional(),
+    /**
+     * Where the studio is. Drives the real sun path (day length changes with
+     * latitude and season) and live weather. City-level precision is plenty.
+     */
+    coordinates: z
+        .object({ lat: z.number().min(-90).max(90), lon: z.number().min(-180).max(180) })
+        .optional(),
     bio: z.string().min(1),
     links: z.array(LinkSchema).default([]),
 });

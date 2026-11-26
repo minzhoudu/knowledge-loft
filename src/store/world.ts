@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import type { LightingMode } from '@/world/environment/time';
+import type { LightingMode, SeasonMode } from '@/world/environment/time';
+import type { LiveWeather, WeatherMode } from '@/world/environment/weather';
 
 /**
  * Global world state.
@@ -62,6 +63,15 @@ type WorldState = {
     /** Real clock, or a fixed daytime/night-time preview. */
     lighting: LightingMode;
     setLighting: (lighting: LightingMode) => void;
+    /** Real calendar, or a fixed season preview. */
+    season: SeasonMode;
+    setSeason: (season: SeasonMode) => void;
+    /** Real weather at the studio, or a fixed preview. */
+    weather: WeatherMode;
+    setWeather: (weather: WeatherMode) => void;
+    /** Latest live weather from /api/weather (null until loaded, or if unavailable). */
+    liveWeather: LiveWeather | null;
+    setLiveWeather: (w: LiveWeather | null) => void;
     setMode: (mode: Mode) => void;
     set: (partial: Partial<Pick<WorldState, 'look' | 'touch' | 'lockFailed' | 'mode'>>) => void;
     setFocused: (focused: FocusTarget | null) => void;
@@ -80,6 +90,12 @@ export const useWorld = create<WorldState>((set) => ({
     doors: {},
     lighting: 'live',
     setLighting: (lighting) => set({ lighting }),
+    season: 'live',
+    setSeason: (season) => set({ season }),
+    weather: 'live',
+    setWeather: (weather) => set({ weather }),
+    liveWeather: null,
+    setLiveWeather: (liveWeather) => set({ liveWeather }),
     setMode: (mode) => set({ mode }),
     set: (partial) => set(partial),
     setFocused: (focused) => set({ focused }),
