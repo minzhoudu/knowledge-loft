@@ -12,6 +12,7 @@ import { DragLook } from '@/world/player/DragLook';
 import { Player } from '@/world/player/Player';
 import { keyMap } from '@/world/player/controls';
 import { Lobby } from '@/world/rooms/lobby/Lobby';
+import { ProjectsRoom } from '@/world/rooms/projects/ProjectsRoom';
 
 /**
  * The 3D experience. Loaded client-only (see WorldClient), because WebGL,
@@ -37,6 +38,7 @@ export default function Experience() {
                         {/* Physics suspends while the Rapier WASM module downloads */}
                         <Physics debug={debug}>
                             <Lobby />
+                            <ProjectsRoom />
                             <Player />
                         </Physics>
                     </Suspense>

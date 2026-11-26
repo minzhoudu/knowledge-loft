@@ -1,19 +1,53 @@
 import { about, companies, formatRange, hobbies, projects } from '@/content';
-import type { InteractableId } from '@/store/world';
+import type { Panel, SectionId } from '@/store/world';
 
 /**
  * Content sections shared by the 3D panels and the 2D quick view.
  * Pure components (no hooks), so they work on the server and in the client.
  */
 
-export const SECTION_TITLES: Record<InteractableId, string> = {
+export const SECTION_TITLES: Record<SectionId, string> = {
     about: 'About me',
     projects: 'Projects',
     career: 'Career',
     hobbies: 'Hobbies',
 };
 
-export function Section({ id }: { id: InteractableId }) {
+export function panelTitle(panel: Panel) {
+    switch (panel.kind) {
+        case 'section':
+            return SECTION_TITLES[panel.id];
+        case 'project':
+            return projects.find((p) => p.slug === panel.slug)?.title ?? 'Project';
+    }
+}
+
+export function PanelBody({ panel }: { panel: Panel }) {
+    switch (panel.kind) {
+        case 'section':
+            return <Section id={panel.id} />;
+        case 'project':
+            return <ProjectDetail slug={panel.slug} />;
+    }
+}
+
+function ProjectDetail({ slug }: { slug: string }) {
+    const p = projects.find((x) => x.slug === slug);
+    if (!p) return <p className="text-muted">This project no longer exists.</p>;
+    return (
+        <div className="flex flex-col gap-3">
+            <p className="text-sm text-muted tabular-nums">
+                {p.year}
+                {p.featured ? ' · Featured' : ''}
+            </p>
+            <p className="leading-relaxed">{p.summary}</p>
+            {p.skills.length > 0 && <Tags items={p.skills} />}
+            <LinkRow links={p.links} />
+        </div>
+    );
+}
+
+export function Section({ id }: { id: SectionId }) {
     switch (id) {
         case 'about':
             return <AboutSection />;

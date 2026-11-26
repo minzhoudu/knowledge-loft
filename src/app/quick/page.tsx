@@ -1,15 +1,15 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { about } from '@/content';
-import type { InteractableId } from '@/store/world';
+import type { SectionId } from '@/store/world';
 import { Section, SECTION_TITLES } from '@/ui/sections';
 
 export const metadata: Metadata = {
-    title: `${about.name} · Quick view`,
+    title: `${about.name} Â· Quick view`,
     description: about.headline,
 };
 
-const ORDER: InteractableId[] = ['about', 'projects', 'career', 'hobbies'];
+const ORDER: SectionId[] = ['about', 'projects', 'career', 'hobbies'];
 
 /**
  * The 2D quick view: same content as the 3D world, as a plain fast page.
@@ -24,7 +24,7 @@ export default function QuickView() {
                 <h1 className="font-display text-4xl font-bold">{about.name}</h1>
                 <p className="text-lg text-muted">{about.headline}</p>
                 <Link href="/" className="text-accent underline-offset-4 hover:underline">
-                    ← Walk through the 3D studio instead
+                    â† Walk through the 3D studio instead
                 </Link>
             </header>
             {ORDER.map((id) => (

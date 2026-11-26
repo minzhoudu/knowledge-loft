@@ -2,7 +2,9 @@
 
 import { Grid } from '@react-three/drei';
 import { CuboidCollider, RigidBody } from '@react-three/rapier';
+import { DoubleSide } from 'three';
 import { Block, GREY } from '@/world/greybox/Block';
+import { Label } from '@/world/greybox/Label';
 import { Interactable } from '@/world/interaction/Interactable';
 import { DOORS, MARKERS, ROOM, WINDOW } from './layout';
 
@@ -13,7 +15,7 @@ const { halfWidth: X, halfDepth: Z, height: H, wall: T } = ROOM;
  *
  * Everything inside the fixed <RigidBody colliders="cuboid"> gets an
  * automatic box collider generated from each mesh. Invisible
- * <CuboidCollider>s block the window and the not-yet-built doorways.
+ * <CuboidCollider>s block the window and doorways whose rooms don't exist yet.
  * Decoration that you shouldn't bump into (window mullions, rug) sits
  * outside the rigid body, so it has no collision at all.
  */
@@ -78,29 +80,42 @@ export function Lobby() {
                 <Furniture />
             </RigidBody>
 
-            {/* invisible blockers: the window, and doorways until their rooms exist */}
+            {/* invisible blocker for the window */}
             <CuboidCollider
                 args={[(WINDOW.x1 - WINDOW.x0) / 2, (WINDOW.y1 - WINDOW.y0) / 2, T / 2]}
                 position={[0, (WINDOW.y0 + WINDOW.y1) / 2, Z + T / 2]}
             />
-            <CuboidCollider
-                args={[T / 2, left.height / 2, left.width / 2]}
-                position={[-X - T / 2, left.height / 2, left.center]}
-            />
-            <CuboidCollider
-                args={[back.width / 2, back.height / 2, T / 2]}
-                position={[back.center, back.height / 2, -Z - T / 2]}
-            />
 
-            {/* dark "coming soon" fills in the doorways */}
-            <mesh position={[-X - T / 2, left.height / 2, left.center]} rotation-y={Math.PI / 2}>
-                <planeGeometry args={[left.width, left.height]} />
-                <meshBasicMaterial color={GREY.dark} />
-            </mesh>
-            <mesh position={[back.center, back.height / 2, -Z - T / 2]}>
-                <planeGeometry args={[back.width, back.height]} />
-                <meshBasicMaterial color={GREY.dark} />
-            </mesh>
+            {/* doorways: a sign above each; closed ones get a blocker and a dark fill */}
+            <Label
+                title="Projects"
+                subtitle={left.open ? undefined : 'Coming soon'}
+                width={1.3}
+                position={[-X + 0.01, left.height + 0.35, left.center]}
+                rotationY={Math.PI / 2}
+            />
+            {!left.open && (
+                <ClosedDoor
+                    position={[-X - T / 2, left.height / 2, left.center]}
+                    rotationY={Math.PI / 2}
+                    width={left.width}
+                    height={left.height}
+                />
+            )}
+            <Label
+                title="Career"
+                subtitle={back.open ? undefined : 'Coming soon'}
+                width={1.3}
+                position={[back.center, back.height + 0.4, -Z + 0.01]}
+            />
+            {!back.open && (
+                <ClosedDoor
+                    position={[back.center, back.height / 2, -Z - T / 2]}
+                    rotationY={0}
+                    width={back.width}
+                    height={back.height}
+                />
+            )}
 
             <WindowMullions />
 
@@ -116,6 +131,29 @@ export function Lobby() {
                 sectionColor="#80868c"
                 fadeDistance={40}
             />
+        </group>
+    );
+}
+
+/** A doorway whose room isn't built yet: dark fill you can see, collider you can't pass. */
+function ClosedDoor({
+    position,
+    rotationY,
+    width,
+    height,
+}: {
+    position: [number, number, number];
+    rotationY: number;
+    width: number;
+    height: number;
+}) {
+    return (
+        <group position={position} rotation-y={rotationY}>
+            <CuboidCollider args={[width / 2, height / 2, T / 2]} />
+            <mesh>
+                <planeGeometry args={[width, height]} />
+                <meshBasicMaterial color={GREY.dark} side={DoubleSide} />
+            </mesh>
         </group>
     );
 }
@@ -177,7 +215,11 @@ function Furniture() {
     return (
         <>
             {/* desk corner: About me */}
-            <Interactable id="about" label="Desk · About me">
+            <Interactable
+                id="lobby-desk"
+                label="Desk · About me"
+                panel={{ kind: 'section', id: 'about' }}
+            >
                 <Block size={[1.9, 0.04, 0.8]} position={[dx, 0.74, dz]} color={I} />
                 <Block size={[0.04, 0.72, 0.7]} position={[dx - 0.85, 0.36, dz]} color={I} />
                 <Block size={[0.04, 0.72, 0.7]} position={[dx + 0.85, 0.36, dz]} color={I} />
@@ -190,7 +232,11 @@ function Furniture() {
             <Block size={[0.5, 0.9, 0.5]} position={[dx, 0.45, dz + 0.75]} />
 
             {/* bookshelf: Hobbies */}
-            <Interactable id="hobbies" label="Bookshelf · Hobbies">
+            <Interactable
+                id="lobby-shelf"
+                label="Bookshelf · Hobbies"
+                panel={{ kind: 'section', id: 'hobbies' }}
+            >
                 <Block size={[0.03, 2.5, 0.38]} position={[sx - 1.2, 1.25, sz]} color={I} />
                 <Block size={[0.03, 2.5, 0.38]} position={[sx + 1.2, 1.25, sz]} color={I} />
                 {[0.12, 0.62, 1.12, 1.62, 2.12].map((y) => (
@@ -199,12 +245,20 @@ function Furniture() {
             </Interactable>
 
             {/* wall screen: Career */}
-            <Interactable id="career" label="Screen · Career">
+            <Interactable
+                id="lobby-screen"
+                label="Screen · Career"
+                panel={{ kind: 'section', id: 'career' }}
+            >
                 <Block size={[2.36, 1.38, 0.05]} position={[ex, ey, ez]} color={I} />
             </Interactable>
 
             {/* plinth: Projects */}
-            <Interactable id="projects" label="Exhibit · Projects">
+            <Interactable
+                id="lobby-plinth"
+                label="Exhibit · All projects"
+                panel={{ kind: 'section', id: 'projects' }}
+            >
                 <Block size={[0.62, 1.05, 0.62]} position={[px, 0.525, pz]} color={I} />
                 <Block size={[0.5, 0.5, 0.5]} position={[px, 1.33, pz]} color="#e9d2b8" />
             </Interactable>

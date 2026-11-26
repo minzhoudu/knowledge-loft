@@ -4,9 +4,9 @@
  */
 
 export const about = {
-    name: 'Your Name',
-    headline: 'Software engineer who builds things for the web',
-    location: 'City, Country',
+    name: 'Pavle Jovanović',
+    headline: 'Software engineer',
+    location: 'Novi Sad, Serbia',
     bio: 'Two or three sentences about who you are, what you work on, and what you care about. This text shows up in the 3D world, on the quick view page, and later feeds the AI assistant.',
     links: [
         { label: 'GitHub', href: 'https://github.com/' },
@@ -29,6 +29,20 @@ export const projects = [
         summary: 'Another project. Keep summaries short; details go on the project page later.',
         year: 2025,
         skills: ['node', 'postgres'],
+    },
+    {
+        slug: 'sample-project-three',
+        title: 'Sample project three',
+        summary: 'A third placeholder, so the gallery has more than one wall exhibit.',
+        year: 2024,
+        skills: ['python'],
+    },
+    {
+        slug: 'sample-project-four',
+        title: 'Sample project four',
+        summary: 'A fourth placeholder. Delete or replace these with your real projects.',
+        year: 2023,
+        skills: ['go', 'docker'],
     },
 ];
 

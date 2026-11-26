@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { useWorld } from '@/store/world';
 import { enterWorld, isTouchDevice } from '@/world/player/input';
 import { Joystick } from './Joystick';
-import { Section, SECTION_TITLES } from './sections';
+import { PanelBody, panelTitle } from './sections';
 
 /** Resume walking with whichever look style is already in use. */
 function resume() {
@@ -30,7 +30,7 @@ export function Hud() {
         function onKey(e: KeyboardEvent) {
             const s = useWorld.getState();
             if (e.code === 'KeyE' && s.mode === 'exploring' && s.focused) {
-                s.open(s.focused.id);
+                s.open(s.focused.panel);
                 document.exitPointerLock();
             } else if (e.code === 'Escape' && s.mode === 'reading') {
                 s.close();
@@ -74,7 +74,7 @@ export function Hud() {
                             {focused && (
                                 <button
                                     type="button"
-                                    onClick={() => useWorld.getState().open(focused.id)}
+                                    onClick={() => useWorld.getState().open(focused.panel)}
                                     className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+48px)] right-[max(24px,env(safe-area-inset-right,0px))] max-w-[45vw] rounded-2xl bg-accent px-5 py-3 text-left text-sm font-semibold text-black shadow-lg"
                                 >
                                     Inspect
@@ -92,7 +92,7 @@ export function Hud() {
                 <div className="fixed inset-0 grid place-items-center bg-black/35 px-4">
                     <div className="flex w-full max-w-sm flex-col gap-4 rounded-2xl bg-panel p-6 text-fg backdrop-blur">
                         <p className="font-mono text-xs uppercase tracking-widest text-muted">
-                            Greybox · Lobby
+                            Greybox
                         </p>
                         <h1 className="font-display text-2xl font-bold">
                             {mode === 'intro' ? 'Studio loft' : 'Paused'}
@@ -167,7 +167,7 @@ export function Hud() {
                     <section className="flex max-h-[85%] w-full max-w-md flex-col gap-4 overflow-y-auto rounded-2xl bg-panel p-6 text-fg backdrop-blur">
                         <div className="flex items-center justify-between gap-4">
                             <h2 id="panel-title" className="font-display text-xl font-bold">
-                                {SECTION_TITLES[openPanel]}
+                                {panelTitle(openPanel)}
                             </h2>
                             <button
                                 type="button"
@@ -181,7 +181,7 @@ export function Hud() {
                                 Back to walking
                             </button>
                         </div>
-                        <Section id={openPanel} />
+                        <PanelBody panel={openPanel} />
                     </section>
                 </div>
             )}

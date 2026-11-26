@@ -24,7 +24,17 @@ export type Mode =
  */
 export type LookMode = 'pointer-lock' | 'drag';
 
-export type InteractableId = 'about' | 'projects' | 'career' | 'hobbies';
+export type SectionId = 'about' | 'projects' | 'career' | 'hobbies';
+
+/**
+ * What a content panel shows. A discriminated union: the `kind` field tells
+ * TypeScript (and the renderer) which other fields exist, so adding a new kind
+ * of panel later (a company, a hobby) is a type error until it's handled.
+ */
+export type Panel = { kind: 'section'; id: SectionId } | { kind: 'project'; slug: string };
+
+/** The interactable the crosshair is on. `id` is unique per object in the world. */
+export type FocusTarget = { id: string; label: string; panel: Panel };
 
 type WorldState = {
     mode: Mode;
@@ -33,12 +43,12 @@ type WorldState = {
     touch: boolean;
     /** The browser refused pointer lock on the last attempt. */
     lockFailed: boolean;
-    focused: { id: InteractableId; label: string } | null;
-    openPanel: InteractableId | null;
+    focused: FocusTarget | null;
+    openPanel: Panel | null;
     setMode: (mode: Mode) => void;
     set: (partial: Partial<Pick<WorldState, 'look' | 'touch' | 'lockFailed' | 'mode'>>) => void;
-    setFocused: (focused: WorldState['focused']) => void;
-    open: (id: InteractableId) => void;
+    setFocused: (focused: FocusTarget | null) => void;
+    open: (panel: Panel) => void;
     close: () => void;
 };
 
@@ -52,7 +62,7 @@ export const useWorld = create<WorldState>((set) => ({
     setMode: (mode) => set({ mode }),
     set: (partial) => set(partial),
     setFocused: (focused) => set({ focused }),
-    open: (id) => set({ openPanel: id, mode: 'reading', focused: null }),
+    open: (panel) => set({ openPanel: panel, mode: 'reading', focused: null }),
     close: () => set({ openPanel: null, mode: 'paused' }),
 }));
 
