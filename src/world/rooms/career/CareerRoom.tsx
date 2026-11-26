@@ -1,9 +1,8 @@
 'use client';
 
-import { Grid } from '@react-three/drei';
 import { RigidBody } from '@react-three/rapier';
 import { companies } from '@/content';
-import { Block, GREY } from '@/world/greybox/Block';
+import { Block } from '@/world/greybox/Block';
 import { Label } from '@/world/greybox/Label';
 import { Interactable } from '@/world/interaction/Interactable';
 import { DOOR, layoutStations, roomFor, type Station } from './layout';
@@ -33,30 +32,26 @@ export function CareerRoom() {
                 <Block
                     size={[W + T * 2, 0.2, L + T]}
                     position={[CX, -0.1, CZ - T / 2]}
-                    color={GREY.floor}
+                    surface="concrete"
                 />
                 <Block
                     size={[W + T * 2, 0.2, L + T]}
                     position={[CX, H + 0.1, CZ - T / 2]}
-                    color={GREY.ceiling}
+                    surface="ceiling"
                 />
 
                 {/* west, east and north walls; the south wall is the lobby's */}
                 <Block
                     size={[T, H, L + T]}
                     position={[x0 - T / 2, H / 2, CZ - T / 2]}
-                    color={GREY.wall}
+                    surface="wall"
                 />
                 <Block
                     size={[T, H, L + T]}
                     position={[x1 + T / 2, H / 2, CZ - T / 2]}
-                    color={GREY.wall}
+                    surface="wall"
                 />
-                <Block
-                    size={[W + T * 2, H, T]}
-                    position={[CX, H / 2, z0 - T / 2]}
-                    color={GREY.wall}
-                />
+                <Block size={[W + T * 2, H, T]} position={[CX, H / 2, z0 - T / 2]} surface="wall" />
 
                 {STATIONS.map((s) => (
                     <StationPanel key={s.company.slug} station={s} />
@@ -64,14 +59,10 @@ export function CareerRoom() {
             </RigidBody>
 
             {/* the timeline: a line down the middle, with a tick and a year at each station */}
-            <Block size={[0.06, 0.01, L - 1]} position={[CX, 0.006, CZ]} color={GREY.dark} />
+            <Block size={[0.06, 0.01, L - 1]} position={[CX, 0.006, CZ]} surface="metal" />
             {STATIONS.map(({ company, position: [, , z], side }) => (
                 <group key={company.slug}>
-                    <Block
-                        size={[W * 0.6, 0.01, 0.06]}
-                        position={[CX, 0.007, z]}
-                        color={GREY.dark}
-                    />
+                    <Block size={[W * 0.6, 0.01, 0.06]} position={[CX, 0.007, z]} surface="metal" />
                     <Label
                         title={company.start.slice(0, 4)}
                         width={0.9}
@@ -118,18 +109,6 @@ export function CareerRoom() {
                     />
                 );
             })}
-
-            <Grid
-                args={[W, L]}
-                position={[CX, 0.002, CZ]}
-                cellSize={0.5}
-                cellThickness={0.5}
-                cellColor="#9ea3a8"
-                sectionSize={1}
-                sectionThickness={1}
-                sectionColor="#80868c"
-                fadeDistance={40}
-            />
         </group>
     );
 }
@@ -144,11 +123,7 @@ function StationPanel({ station }: { station: Station }) {
                 label={`${company.name} · ${company.role}`}
                 action={{ kind: 'panel', panel: { kind: 'company', slug: company.slug } }}
             >
-                <Block
-                    size={[2.3, 1.5, 0.05]}
-                    position={[0, 1.95, 0.025]}
-                    color={GREY.interactive}
-                />
+                <Block size={[2.3, 1.5, 0.05]} position={[0, 1.95, 0.025]} surface="accent" />
             </Interactable>
         </group>
     );

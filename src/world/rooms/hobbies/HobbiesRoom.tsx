@@ -1,9 +1,8 @@
 'use client';
 
-import { Grid } from '@react-three/drei';
 import { CuboidCollider, RigidBody } from '@react-three/rapier';
 import { hobbies } from '@/content';
-import { Block, GREY } from '@/world/greybox/Block';
+import { Block } from '@/world/greybox/Block';
 import { Label } from '@/world/greybox/Label';
 import { Lamp } from '@/world/environment/Lamp';
 import { Interactable } from '@/world/interaction/Interactable';
@@ -29,46 +28,42 @@ export function HobbiesRoom() {
                 <Block
                     size={[W + T, 0.2, D + T * 2]}
                     position={[CENTER.x + T / 2, -0.1, CENTER.z]}
-                    color={GREY.floor}
+                    surface="floor"
                 />
                 <Block
                     size={[W + T, 0.2, D + T * 2]}
                     position={[CENTER.x + T / 2, H + 0.1, CENTER.z]}
-                    color={GREY.ceiling}
+                    surface="ceiling"
                 />
 
                 {/* north and east walls; the west wall is the lobby's */}
                 <Block
                     size={[W + T, H, T]}
                     position={[CENTER.x + T / 2, H / 2, z0 - T / 2]}
-                    color={GREY.wall}
+                    surface="wall"
                 />
-                <Block
-                    size={[T, H, D]}
-                    position={[x1 + T / 2, H / 2, CENTER.z]}
-                    color={GREY.wall}
-                />
+                <Block size={[T, H, D]} position={[x1 + T / 2, H / 2, CENTER.z]} surface="wall" />
 
                 {/* south wall: solid around a big window */}
                 <Block
                     size={[WINDOW.x0 - x0, H, T]}
                     position={[(x0 + WINDOW.x0) / 2, H / 2, z1 + T / 2]}
-                    color={GREY.wall}
+                    surface="wall"
                 />
                 <Block
                     size={[x1 + T - WINDOW.x1, H, T]}
                     position={[(WINDOW.x1 + x1 + T) / 2, H / 2, z1 + T / 2]}
-                    color={GREY.wall}
+                    surface="wall"
                 />
                 <Block
                     size={[WINDOW.x1 - WINDOW.x0, WINDOW.y0, T]}
                     position={[(WINDOW.x0 + WINDOW.x1) / 2, WINDOW.y0 / 2, z1 + T / 2]}
-                    color={GREY.wall}
+                    surface="wall"
                 />
                 <Block
                     size={[WINDOW.x1 - WINDOW.x0, H - WINDOW.y1, T]}
                     position={[(WINDOW.x0 + WINDOW.x1) / 2, (H + WINDOW.y1) / 2, z1 + T / 2]}
-                    color={GREY.wall}
+                    surface="wall"
                 />
 
                 {spots.map((spot) => (
@@ -115,18 +110,6 @@ export function HobbiesRoom() {
             {/* lamps come on at dusk: the floor lamp by the lounge, and a ceiling light */}
             <Lamp position={[CENTER.x + 2.3, 1.75, CENTER.z + 2.2]} intensity={8} bulbRadius={0} />
             <Lamp position={[CENTER.x, H - 0.5, CENTER.z - 1.5]} intensity={14} color="#ffe2b8" />
-
-            <Grid
-                args={[W, D]}
-                position={[CENTER.x, 0.002, CENTER.z]}
-                cellSize={0.5}
-                cellThickness={0.5}
-                cellColor="#9ea3a8"
-                sectionSize={1}
-                sectionThickness={1}
-                sectionColor="#80868c"
-                fadeDistance={40}
-            />
         </group>
     );
 }
@@ -141,17 +124,9 @@ function HobbyDisplay({ spot }: { spot: HobbySpot }) {
                 label={hobby.name}
                 action={{ kind: 'panel', panel: { kind: 'hobby', slug: hobby.slug } }}
             >
-                <Block
-                    size={[1.4, 0.75, 0.6]}
-                    position={[0, 0.375, 0.32]}
-                    color={GREY.interactive}
-                />
+                <Block size={[1.4, 0.75, 0.6]} position={[0, 0.375, 0.32]} surface="accent" />
                 <Block size={[0.4, 0.4, 0.4]} position={[0, 0.95, 0.32]} color="#e9d2b8" />
-                <Block
-                    size={[1.7, 1.1, 0.05]}
-                    position={[0, 2.0, 0.025]}
-                    color={GREY.interactive}
-                />
+                <Block size={[1.7, 1.1, 0.05]} position={[0, 2.0, 0.025]} surface="accent" />
             </Interactable>
         </group>
     );
@@ -169,11 +144,7 @@ function Lounge() {
             <Block size={[0.9, 0.5, 0.2]} position={[cx + 1.2, 0.7, cz - 0.65]} />
             <Block size={[1.0, 0.4, 0.6]} position={[cx, 0.2, cz + 0.4]} />
             {/* floor lamp */}
-            <Block
-                size={[0.06, 1.6, 0.06]}
-                position={[cx + 2.3, 0.8, cz + 1.0]}
-                color={GREY.dark}
-            />
+            <Block size={[0.06, 1.6, 0.06]} position={[cx + 2.3, 0.8, cz + 1.0]} surface="metal" />
             <Block size={[0.4, 0.3, 0.4]} position={[cx + 2.3, 1.75, cz + 1.0]} color="#f3e3c7" />
         </>
     );
@@ -192,7 +163,7 @@ function Mullions() {
                     key={`v${i}`}
                     size={[0.05, h, 0.06]}
                     position={[WINDOW.x0 + (i * w) / cols, WINDOW.y0 + h / 2, z]}
-                    color={GREY.dark}
+                    surface="metal"
                 />
             ))}
             {Array.from({ length: rows + 1 }, (_, j) => (
@@ -200,7 +171,7 @@ function Mullions() {
                     key={`h${j}`}
                     size={[w, 0.05, 0.06]}
                     position={[(WINDOW.x0 + WINDOW.x1) / 2, WINDOW.y0 + (j * h) / rows, z]}
-                    color={GREY.dark}
+                    surface="metal"
                 />
             ))}
         </group>

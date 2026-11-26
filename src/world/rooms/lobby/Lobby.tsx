@@ -1,9 +1,9 @@
 'use client';
 
-import { Grid } from '@react-three/drei';
 import { CuboidCollider, RigidBody } from '@react-three/rapier';
 import { DoubleSide } from 'three';
-import { Block, GREY } from '@/world/greybox/Block';
+import { Block } from '@/world/greybox/Block';
+import type { Surface } from '@/world/materials/surfaces';
 import { Door } from '@/world/greybox/Door';
 import { Label } from '@/world/greybox/Label';
 import { Lamp } from '@/world/environment/Lamp';
@@ -39,21 +39,21 @@ export function Lobby() {
                 <Block
                     size={[X * 2 + T * 2, 0.2, Z * 2 + T * 2]}
                     position={[0, -0.1, 0]}
-                    color={GREY.floor}
+                    surface="floor"
                 />
                 <Block
                     size={[X * 2 + T * 2, 0.2, Z * 2 + T * 2]}
                     position={[0, H + 0.1, 0]}
-                    color={GREY.ceiling}
+                    surface="ceiling"
                 />
 
-                {/* back wall (z = -Z) with the Career doorway */}
-                <Wall from={[-X - T, -Z - T / 2]} to={[bx0, -Z - T / 2]} axis="x" />
-                <Wall from={[bx1, -Z - T / 2]} to={[X + T, -Z - T / 2]} axis="x" />
+                {/* back wall (z = -Z) with the Career doorway: exposed brick, the loft's accent wall */}
+                <Wall from={[-X - T, -Z - T / 2]} to={[bx0, -Z - T / 2]} axis="x" surface="brick" />
+                <Wall from={[bx1, -Z - T / 2]} to={[X + T, -Z - T / 2]} axis="x" surface="brick" />
                 <Block
                     size={[back.width, H - back.height, T]}
                     position={[back.center, (H + back.height) / 2, -Z - T / 2]}
-                    color={GREY.wall}
+                    surface="brick"
                 />
 
                 {/* left wall (x = -X) with the Projects doorway */}
@@ -62,7 +62,7 @@ export function Lobby() {
                 <Block
                     size={[T, H - left.height, left.width]}
                     position={[-X - T / 2, (H + left.height) / 2, left.center]}
-                    color={GREY.wall}
+                    surface="wall"
                 />
 
                 {/* right wall (x = +X) with the Hobbies doorway */}
@@ -71,7 +71,7 @@ export function Lobby() {
                 <Block
                     size={[T, H - right.height, right.width]}
                     position={[X + T / 2, (H + right.height) / 2, right.center]}
-                    color={GREY.wall}
+                    surface="wall"
                 />
 
                 {/* window wall (z = +Z): solid around one big opening */}
@@ -80,12 +80,12 @@ export function Lobby() {
                 <Block
                     size={[WINDOW.x1 - WINDOW.x0, WINDOW.y0, T]}
                     position={[0, WINDOW.y0 / 2, Z + T / 2]}
-                    color={GREY.wall}
+                    surface="wall"
                 />
                 <Block
                     size={[WINDOW.x1 - WINDOW.x0, H - WINDOW.y1, T]}
                     position={[0, (H + WINDOW.y1) / 2, Z + T / 2]}
-                    color={GREY.wall}
+                    surface="wall"
                 />
 
                 <Furniture />
@@ -176,26 +176,13 @@ export function Lobby() {
 
             <WindowMullions />
 
-            {/* 1 m grid on the floor, so you can judge scale while walking */}
-            <Grid
-                args={[X * 2, Z * 2]}
-                position={[0, 0.002, 0]}
-                cellSize={0.5}
-                cellThickness={0.5}
-                cellColor="#9ea3a8"
-                sectionSize={1}
-                sectionThickness={1}
-                sectionColor="#80868c"
-                fadeDistance={40}
-            />
-
             {/* pendant lamps that come on at dusk: over the exhibit, the desk and the lounge */}
             {PENDANTS.map(([x, y, z]) => (
                 <group key={`${x},${z}`}>
                     <Block
                         size={[0.02, H - y - 0.12, 0.02]}
                         position={[x, (H + y + 0.12) / 2, z]}
-                        color={GREY.dark}
+                        surface="metal"
                     />
                     <Lamp position={[x, y, z]} intensity={12} bulbRadius={0.14} />
                 </group>
@@ -227,7 +214,7 @@ function ClosedDoor({
             <CuboidCollider args={[width / 2, height / 2, T / 2]} />
             <mesh>
                 <planeGeometry args={[width, height]} />
-                <meshBasicMaterial color={GREY.dark} side={DoubleSide} />
+                <meshBasicMaterial color="#26282b" side={DoubleSide} />
             </mesh>
         </group>
     );
@@ -238,16 +225,18 @@ function Wall({
     from,
     to,
     axis,
+    surface = 'wall',
 }: {
     from: [number, number];
     to: [number, number];
     axis: 'x' | 'z';
+    surface?: Surface;
 }) {
     const length = axis === 'x' ? to[0] - from[0] : to[1] - from[1];
     const cx = (from[0] + to[0]) / 2;
     const cz = (from[1] + to[1]) / 2;
     const size: [number, number, number] = axis === 'x' ? [length, H, T] : [T, H, length];
-    return <Block size={size} position={[cx, H / 2, cz]} color={GREY.wall} />;
+    return <Block size={size} position={[cx, H / 2, cz]} surface={surface} />;
 }
 
 function WindowMullions() {
@@ -263,7 +252,7 @@ function WindowMullions() {
                     key={`v${i}`}
                     size={[0.05, h, 0.06]}
                     position={[WINDOW.x0 + (i * w) / cols, WINDOW.y0 + h / 2, z]}
-                    color={GREY.dark}
+                    surface="metal"
                 />
             ))}
             {Array.from({ length: rows + 1 }, (_, j) => (
@@ -271,7 +260,7 @@ function WindowMullions() {
                     key={`h${j}`}
                     size={[w, 0.05, 0.06]}
                     position={[0, WINDOW.y0 + (j * h) / rows, z]}
-                    color={GREY.dark}
+                    surface="metal"
                 />
             ))}
         </group>
@@ -285,7 +274,6 @@ function Furniture() {
     const [ex, ey, ez] = MARKERS.screen.position;
     const [fx, , fz] = MARKERS.sofa.position;
     const [tx, , tz] = MARKERS.coffeeTable.position;
-    const I = GREY.interactive;
 
     return (
         <>
@@ -295,14 +283,10 @@ function Furniture() {
                 label="Desk · About me"
                 action={{ kind: 'panel', panel: { kind: 'section', id: 'about' } }}
             >
-                <Block size={[1.9, 0.04, 0.8]} position={[dx, 0.74, dz]} color={I} />
-                <Block size={[0.04, 0.72, 0.7]} position={[dx - 0.85, 0.36, dz]} color={I} />
-                <Block size={[0.04, 0.72, 0.7]} position={[dx + 0.85, 0.36, dz]} color={I} />
-                <Block
-                    size={[0.96, 0.56, 0.03]}
-                    position={[dx, 1.15, dz - 0.17]}
-                    color={GREY.dark}
-                />
+                <Block size={[1.9, 0.04, 0.8]} position={[dx, 0.74, dz]} surface="accent" />
+                <Block size={[0.04, 0.72, 0.7]} position={[dx - 0.85, 0.36, dz]} surface="accent" />
+                <Block size={[0.04, 0.72, 0.7]} position={[dx + 0.85, 0.36, dz]} surface="accent" />
+                <Block size={[0.96, 0.56, 0.03]} position={[dx, 1.15, dz - 0.17]} surface="metal" />
             </Interactable>
             <Block size={[0.5, 0.9, 0.5]} position={[dx, 0.45, dz + 0.75]} />
 
@@ -312,10 +296,15 @@ function Furniture() {
                 label="Bookshelf · Hobbies"
                 action={{ kind: 'panel', panel: { kind: 'section', id: 'hobbies' } }}
             >
-                <Block size={[0.03, 2.5, 0.38]} position={[sx - 1.2, 1.25, sz]} color={I} />
-                <Block size={[0.03, 2.5, 0.38]} position={[sx + 1.2, 1.25, sz]} color={I} />
+                <Block size={[0.03, 2.5, 0.38]} position={[sx - 1.2, 1.25, sz]} surface="accent" />
+                <Block size={[0.03, 2.5, 0.38]} position={[sx + 1.2, 1.25, sz]} surface="accent" />
                 {[0.12, 0.62, 1.12, 1.62, 2.12].map((y) => (
-                    <Block key={y} size={[2.4, 0.03, 0.38]} position={[sx, y, sz]} color={I} />
+                    <Block
+                        key={y}
+                        size={[2.4, 0.03, 0.38]}
+                        position={[sx, y, sz]}
+                        surface="accent"
+                    />
                 ))}
             </Interactable>
 
@@ -325,7 +314,7 @@ function Furniture() {
                 label="Screen · Career"
                 action={{ kind: 'panel', panel: { kind: 'section', id: 'career' } }}
             >
-                <Block size={[2.36, 1.38, 0.05]} position={[ex, ey, ez]} color={I} />
+                <Block size={[2.36, 1.38, 0.05]} position={[ex, ey, ez]} surface="accent" />
             </Interactable>
 
             {/* plinth: Projects */}
@@ -334,7 +323,7 @@ function Furniture() {
                 label="Exhibit · All projects"
                 action={{ kind: 'panel', panel: { kind: 'section', id: 'projects' } }}
             >
-                <Block size={[0.62, 1.05, 0.62]} position={[px, 0.525, pz]} color={I} />
+                <Block size={[0.62, 1.05, 0.62]} position={[px, 0.525, pz]} surface="accent" />
                 <Block size={[0.5, 0.5, 0.5]} position={[px, 1.33, pz]} color="#e9d2b8" />
             </Interactable>
 
@@ -348,7 +337,7 @@ function Furniture() {
                     key={`${x},${z}`}
                     size={[0.5, 1.4, 0.5]}
                     position={[x, 0.7, z]}
-                    color={GREY.plant}
+                    surface="plant"
                 />
             ))}
         </>

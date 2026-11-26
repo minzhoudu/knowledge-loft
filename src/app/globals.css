@@ -54,6 +54,16 @@
     }
 }
 
+/* ?perf meter (stats-gl): top right, clear of the HUD clock. */
+.perf-meter {
+    position: fixed;
+    top: 64px;
+    right: 8px;
+    z-index: 50;
+    display: flex;
+    pointer-events: none;
+}
+
 /* The canvas handles its own touch gestures: no browser scrolling or pinch-zoom on it. */
 #world canvas {
     touch-action: none;

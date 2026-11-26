@@ -86,18 +86,18 @@ export function Door({ id, label, hinge, rotationY, swing, width, height }: Prop
                 <Block
                     size={[leafW, leafH, LEAF_THICKNESS]}
                     position={[cx, leafH / 2, 0]}
-                    color="#c9b49a"
+                    surface="wood"
                 />
                 {/* handles on both faces, near the latch side */}
                 <Block
                     size={[0.14, 0.03, 0.04]}
                     position={[GAP + leafW - 0.15, 1.0, LEAF_THICKNESS / 2 + 0.03]}
-                    color="#5b6168"
+                    surface="metal"
                 />
                 <Block
                     size={[0.14, 0.03, 0.04]}
                     position={[GAP + leafW - 0.15, 1.0, -LEAF_THICKNESS / 2 - 0.03]}
-                    color="#5b6168"
+                    surface="metal"
                 />
             </Interactable>
         </RigidBody>

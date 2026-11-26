@@ -1,39 +1,52 @@
 'use client';
 
+import { useEffect, useMemo } from 'react';
 import { useIsFocused } from '@/world/interaction/Interactable';
+import { plainProps, surfaceProps, worldBox, type Surface } from '@/world/materials/surfaces';
 
 type Vec3 = [number, number, number];
-
-export const GREY = {
-    floor: '#b9bcbf',
-    wall: '#d9dbdd',
-    ceiling: '#e4e5e6',
-    furniture: '#9aa0a6',
-    dark: '#5b6168',
-    plant: '#7fa07a',
-    interactive: '#d9a066', // anything you can inspect is tinted warm
-} as const;
 
 type Props = {
     size: Vec3;
     position: Vec3;
+    /** What it's made of (see materials/surfaces.ts). */
+    surface?: Surface;
+    /** A one-off plain colour instead of a surface (fabric, ceramics). */
     color?: string;
     rotationY?: number;
 };
 
 /**
- * A greybox building block: just a box with a flat colour.
+ * A building block: a box made of one material.
  * Inside an <Interactable>, it glows softly while the player looks at it.
+ *
+ * Each block gets its own material instance (the textures behind it are
+ * shared), so one block can glow without lighting up every other block of
+ * the same surface. three.js compiles one shader per material *type and
+ * features*, not per instance, so this costs almost nothing.
  */
-export function Block({ size, position, color = GREY.furniture, rotationY = 0 }: Props) {
+export function Block({ size, position, surface = 'wood', color, rotationY = 0 }: Props) {
     const focused = useIsFocused();
+    const [w, h, d] = size;
+    const [x, y, z] = position;
+    const geometry = useMemo(
+        () => worldBox([w, h, d], [x, y, z], rotationY),
+        [w, h, d, x, y, z, rotationY],
+    );
+    useEffect(() => () => geometry.dispose(), [geometry]);
+    const look = color ? plainProps(color) : surfaceProps(surface);
+
     return (
-        <mesh position={position} rotation-y={rotationY} castShadow receiveShadow>
-            <boxGeometry args={size} />
+        <mesh
+            geometry={geometry}
+            position={position}
+            rotation-y={rotationY}
+            castShadow
+            receiveShadow
+        >
             <meshStandardMaterial
-                color={color}
-                roughness={0.85}
-                emissive={color}
+                {...look}
+                emissive={look.color}
                 emissiveIntensity={focused ? 0.35 : 0}
             />
         </mesh>

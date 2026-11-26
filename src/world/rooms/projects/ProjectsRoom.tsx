@@ -1,15 +1,13 @@
 'use client';
 
-import { Grid } from '@react-three/drei';
 import { RigidBody } from '@react-three/rapier';
 import { projects } from '@/content';
-import { Block, GREY } from '@/world/greybox/Block';
+import { Block } from '@/world/greybox/Block';
 import { Label } from '@/world/greybox/Label';
 import { Interactable } from '@/world/interaction/Interactable';
 import { CENTER, DOOR, layoutExhibits, ROOM, type ExhibitSlot } from './layout';
 
 const { x0, x1, z0, z1, height: H, wall: T } = ROOM;
-const I = GREY.interactive;
 const PLAQUE_Z = -0.86; // exhibit-local z of the wall panel (the wall is at -0.9)
 
 // Computed once at module load: content is static, so the layout is too.
@@ -33,30 +31,26 @@ export function ProjectsRoom() {
                 <Block
                     size={[w + T, 0.2, d + T * 2]}
                     position={[x0 - T / 2 + w / 2, -0.1, CENTER.z]}
-                    color={GREY.floor}
+                    surface="concrete"
                 />
                 <Block
                     size={[w + T, 0.2, d + T * 2]}
                     position={[x0 - T / 2 + w / 2, H + 0.1, CENTER.z]}
-                    color={GREY.ceiling}
+                    surface="ceiling"
                 />
 
                 {/* north, south and west walls; the east wall is the lobby's */}
                 <Block
                     size={[w + T, H, T]}
                     position={[x0 - T / 2 + w / 2, H / 2, z0 - T / 2]}
-                    color={GREY.wall}
+                    surface="wall"
                 />
                 <Block
                     size={[w + T, H, T]}
                     position={[x0 - T / 2 + w / 2, H / 2, z1 + T / 2]}
-                    color={GREY.wall}
+                    surface="wall"
                 />
-                <Block
-                    size={[T, H, d]}
-                    position={[x0 - T / 2, H / 2, CENTER.z]}
-                    color={GREY.wall}
-                />
+                <Block size={[T, H, d]} position={[x0 - T / 2, H / 2, CENTER.z]} surface="wall" />
 
                 {featured && <FeaturedPodium />}
                 {slots.map((slot) => (
@@ -108,18 +102,6 @@ export function ProjectsRoom() {
                     decay={2}
                 />
             ))}
-
-            <Grid
-                args={[w, d]}
-                position={[CENTER.x, 0.002, CENTER.z]}
-                cellSize={0.5}
-                cellThickness={0.5}
-                cellColor="#9ea3a8"
-                sectionSize={1}
-                sectionThickness={1}
-                sectionColor="#80868c"
-                fadeDistance={40}
-            />
         </group>
     );
 }
@@ -134,9 +116,9 @@ function Exhibit({ slot }: { slot: ExhibitSlot }) {
                 label={`Exhibit · ${project.title}`}
                 action={{ kind: 'panel', panel: { kind: 'project', slug: project.slug } }}
             >
-                <Block size={[0.6, 1.0, 0.6]} position={[0, 0.5, 0]} color={I} />
+                <Block size={[0.6, 1.0, 0.6]} position={[0, 0.5, 0]} surface="accent" />
                 <Block size={[0.35, 0.35, 0.35]} position={[0, 1.18, 0]} color="#e9d2b8" />
-                <Block size={[1.8, 1.2, 0.05]} position={[0, 2.0, PLAQUE_Z]} color={I} />
+                <Block size={[1.8, 1.2, 0.05]} position={[0, 2.0, PLAQUE_Z]} surface="accent" />
             </Interactable>
         </group>
     );
@@ -152,8 +134,8 @@ function FeaturedPodium() {
                 label={`Featured · ${featured.title}`}
                 action={{ kind: 'panel', panel: { kind: 'project', slug: featured.slug } }}
             >
-                <Block size={[1.8, 0.25, 1.8]} position={[0, 0.125, 0]} color={I} />
-                <Block size={[0.9, 0.9, 0.9]} position={[0, 0.7, 0]} color={I} />
+                <Block size={[1.8, 0.25, 1.8]} position={[0, 0.125, 0]} surface="accent" />
+                <Block size={[0.9, 0.9, 0.9]} position={[0, 0.7, 0]} surface="accent" />
                 <Block size={[0.6, 0.6, 0.6]} position={[0, 1.45, 0]} color="#e9d2b8" />
             </Interactable>
         </group>

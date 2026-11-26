@@ -6,6 +6,7 @@ import { Color, Vector3, type DirectionalLight, type Fog, type HemisphereLight }
 import { useWorld } from '@/store/world';
 import { Ground, groundMaterial } from '@/world/environment/Ground';
 import { Precipitation } from '@/world/environment/Precipitation';
+import { EnvironmentMap } from '@/world/environment/EnvironmentMap';
 import { createSkyMaterial, Sky, type SkyUniforms } from '@/world/environment/Sky';
 import { daylight, goldenHour, sunAt } from '@/world/environment/sun';
 import {
@@ -49,7 +50,7 @@ const C = {
     moon: new Color('#9fb4ff'),
     hemiSkyDay: new Color('#e8eef5'),
     hemiSkyNight: new Color('#2a3550'),
-    hemiGroundDay: new Color('#8a8178'),
+    hemiGroundDay: new Color('#b3a594'), // light bouncing up off a warm floor
     hemiGroundNight: new Color('#14100c'),
     snow: new Color('#eef2f6'),
 };
@@ -216,6 +217,7 @@ export function Lighting() {
     return (
         <>
             <Sky material={sky} />
+            <EnvironmentMap material={sky} />
             <Ground />
             <Precipitation />
             <fog ref={fog} attach="fog" args={['#cfe3f0', 45, 150]} />
