@@ -10,6 +10,7 @@ import { Door } from '@/world/greybox/Door';
 import { Label } from '@/world/greybox/Label';
 import { Lamp } from '@/world/environment/Lamp';
 import { Interactable } from '@/world/interaction/Interactable';
+import { Bookshelf } from '@/world/bookshelf/Bookshelf';
 import { Model } from '@/world/models/Model';
 import { SeatScreen } from '@/world/seats/SeatScreen';
 import { DOORS, MARKERS, ROOM, WINDOW } from './layout';
@@ -345,18 +346,11 @@ function Models() {
                 <SeatScreen seat="lobby-career" />
             </Interactable>
 
-            {/* steel-frame bookshelf against the brick: Hobbies */}
-            <Interactable
-                id="lobby-shelf"
-                label="Bookshelf · Hobbies"
-                action={{ kind: 'panel', panel: { kind: 'section', id: 'hobbies' } }}
-            >
-                <Model name="steel-shelves" position={[sx, 0, -Z + 0.38]} />
-                {SHELF_BOOKS.map(([x, y], i) => (
-                    <Model key={i} name="books" position={[sx + x, y, -Z + 0.3]} collider={false} />
-                ))}
-                <Model name="vase" position={[sx - 0.75, SHELF_TOP, -Z + 0.36]} collider={false} />
-            </Interactable>
+            {/* steel-frame bookshelf against the brick: the knowledge base. Every book
+                is a note (src/content/notes); aim at one and take it to read. */}
+            <Model name="steel-shelves" position={[sx, 0, -Z + 0.38]} />
+            <Bookshelf position={[sx, 0, -Z + 0.38]} />
+            <Model name="vase" position={[sx - 0.75, SHELF_TOP, -Z + 0.36]} collider={false} />
 
             {/* lounge by the window: a chesterfield facing the room, a lounge chair, a low table */}
             <Model name="sofa" position={[fx, 0, fz]} rotationY={Math.PI} />
@@ -378,18 +372,5 @@ function Models() {
 
 const PLANTS = ['monstera', 'plant-pot', 'plant-tall'] as const;
 
-/**
- * Book sets on the steel shelves: [x offset from the shelf's centre, board height].
- *
- * The two halves have boards at different heights. Measured by probing the
- * model straight down at each x for upward-facing surfaces:
- *   left  (x < 0): 0.66 (top of the drawers), 1.32, 2.30 (top)
- *   right (x > 0): 0.66, 1.09, 1.75, 2.30
- */
+/** Top of the steel shelf (measured from the model), where the vase stands. */
 const SHELF_TOP = 2.3;
-const SHELF_BOOKS: [number, number][] = [
-    [-0.5, 0.66],
-    [-0.45, 1.32],
-    [0.5, 1.09],
-    [0.55, 1.75],
-];

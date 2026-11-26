@@ -5,6 +5,7 @@ import { useThree } from '@react-three/fiber';
 import { useEffect, useMemo } from 'react';
 import { CanvasTexture, SRGBColorSpace, Vector3 } from 'three';
 import { useWorld, type SeatId } from '@/store/world';
+import { readableZoom } from '@/world/reading';
 import { Section } from '@/ui/sections';
 import { leaveLabel, SEATS, type IdleLine, type Seat } from './seats';
 
@@ -14,8 +15,6 @@ import { leaveLabel, SEATS, type IdleLine, type Seat } from './seats';
  * monitor and a big wall display alike.
  */
 const PAGE_WIDTH = 960;
-/** Smallest comfortable reading size on the visitor's display, in CSS px. */
-const MIN_TEXT_PX = 15;
 
 /**
  * A screen's picture, for a seat (see seats.ts).
@@ -73,21 +72,15 @@ function ScreenPage({ seat }: { seat: Seat }) {
     const w = PAGE_WIDTH;
     const h = Math.round(screen.height * pxPerMetre);
 
-    // How big will the page look? Project the screen's left and right edges
-    // into the viewport and compare with the page's layout width. On a large
-    // display it's scaled up (fine); on a phone it's scaled way down, so the
-    // text is zoomed back up to stay readable, and you scroll more instead.
+    // Zoom the text back up if the page will look too small (see readableZoom).
     const zoom = useMemo(() => {
-        const { camera } = get();
         const [x, y, z] = screen.center;
         const c = Math.cos(screen.rotationY);
         const s = Math.sin(screen.rotationY);
         const half = screen.width / 2;
-        left.set(x - c * half, y, z + s * half).project(camera);
-        right.set(x + c * half, y, z - s * half).project(camera);
-        const onScreenPx = (Math.abs(right.x - left.x) / 2) * size.width;
-        const scale = onScreenPx / w;
-        return Math.min(2.5, Math.max(1, MIN_TEXT_PX / (16 * scale)));
+        left.set(x - c * half, y, z + s * half);
+        right.set(x + c * half, y, z - s * half);
+        return readableZoom(get().camera, size.width, left, right, w);
     }, [get, screen, size.width, w]);
 
     return (

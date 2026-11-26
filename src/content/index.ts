@@ -53,11 +53,14 @@ export type {
     Currently,
     CurrentlyKind,
     Hobby,
+    NoteArea,
+    NoteKind,
     Project,
     Skill,
     SkillCategory,
 } from './schema';
-export { CURRENTLY_KINDS, SKILL_CATEGORIES } from './schema';
+export { CURRENTLY_KINDS, NOTE_AREAS, NOTE_KINDS, SKILL_CATEGORIES } from './schema';
+export { noteBySlug, notes, type Note } from './notes';
 
 export function formatRange(start: string, end: string | null) {
     const fmt = (ym: string) => {

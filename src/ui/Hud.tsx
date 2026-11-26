@@ -38,6 +38,7 @@ export function Hud() {
     const openPanel = useWorld((s) => s.openPanel);
     const seatPhase = useWorld((s) => s.seatPhase);
     const seat = useWorld((s) => s.seat);
+    const bookPhase = useWorld((s) => s.bookPhase);
     // Only re-render for the focused door's state, not every door in the world.
     const focusedDoorOpen = useWorld((s) =>
         s.focused?.action.kind === 'door' ? !!s.doors[s.focused.action.door] : false,
@@ -64,6 +65,9 @@ export function Hud() {
             } else if (s.mode === 'seated' && (esc || (e.code === 'KeyE' && !e.repeat))) {
                 // Get up from a desk. The glide back ends in resumeFromKey (SeatCamera).
                 s.standUp();
+            } else if (s.mode === 'holding' && (esc || (e.code === 'KeyE' && !e.repeat))) {
+                // Put the book back. Its flight home ends in resumeFromKey (CarriedBook).
+                s.putBack();
             } else if (e.code === 'KeyM' && !e.repeat) {
                 s.toggleMuted();
             } else if (esc && s.mode === 'reading') {
@@ -260,6 +264,21 @@ export function Hud() {
                 </button>
             )}
 
+            {mode === 'holding' && bookPhase !== 'returning' && (
+                <button
+                    type="button"
+                    onClick={() => useWorld.getState().putBack()}
+                    className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+24px)] left-1/2 z-30 -translate-x-1/2 rounded-full bg-panel px-4 py-2 text-sm text-fg backdrop-blur hover:text-accent"
+                >
+                    {!touch && (
+                        <kbd className="mr-2 rounded border border-line px-1.5 py-0.5 font-mono text-xs">
+                            Esc
+                        </kbd>
+                    )}
+                    Put back
+                </button>
+            )}
+
             {mode === 'reading' && openPanel && (
                 <div
                     className="fixed inset-0 flex items-end justify-end bg-black/25 p-4 sm:items-center"
@@ -295,6 +314,7 @@ export function Hud() {
 function actionVerb(target: FocusTarget, doorOpen: boolean) {
     if (target.action.kind === 'door') return doorOpen ? 'Close' : 'Open';
     if (target.action.kind === 'sit') return seatVerb(SEATS[target.action.seat]);
+    if (target.action.kind === 'book') return 'Read';
     return 'Inspect';
 }
 

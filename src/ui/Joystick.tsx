@@ -57,7 +57,8 @@ export function Joystick() {
             className="fixed bottom-0 left-0 h-[55%] w-1/2 touch-none select-none"
             onPointerDown={(e) => {
                 if (active.current) return;
-                const rect = zone.current!.getBoundingClientRect();
+                if (!zone.current) return; // the pad unmounted mid-drag (e.g. a panel opened)
+                const rect = zone.current.getBoundingClientRect();
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
                 active.current = { id: e.pointerId, x, y };
@@ -68,7 +69,8 @@ export function Joystick() {
             onPointerMove={(e) => {
                 const a = active.current;
                 if (!a || e.pointerId !== a.id) return;
-                const rect = zone.current!.getBoundingClientRect();
+                if (!zone.current) return; // the pad unmounted mid-drag (e.g. a panel opened)
+                const rect = zone.current.getBoundingClientRect();
                 let dx = e.clientX - rect.left - a.x;
                 let dy = e.clientY - rect.top - a.y;
                 const len = Math.hypot(dx, dy);

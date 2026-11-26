@@ -42,8 +42,8 @@ export function Ambience() {
         const { ctx, layers: L } = e;
         const world = useWorld.getState();
         const exploring = world.mode === 'exploring';
-        // Sitting at a desk is still being in the room: full sound, no footsteps.
-        const inRoom = exploring || world.mode === 'seated';
+        // Sitting at a desk or reading a book is still being in the room: full sound, no footsteps.
+        const inRoom = exploring || world.mode === 'seated' || world.mode === 'holding';
 
         // Mute, and duck to a murmur while paused or reading a panel.
         glide(ctx, e.master.gain, world.muted ? 0 : inRoom ? 1 : 0.35, 0.6);

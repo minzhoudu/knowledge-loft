@@ -11,6 +11,9 @@ import {
     skills,
     skillUsage,
     type SkillCategory,
+    NOTE_AREAS,
+    NOTE_KINDS,
+    notes,
 } from '@/content';
 import type { Panel, SectionId } from '@/store/world';
 import { GithubPanel, RepoPanel } from './github';
@@ -27,6 +30,7 @@ export const SECTION_TITLES: Record<SectionId, string> = {
     career: 'Career',
     hobbies: 'Hobbies',
     skills: 'Skills',
+    notes: 'Field notes',
 };
 
 export function panelTitle(panel: Panel) {
@@ -164,6 +168,8 @@ export function Section({ id }: { id: SectionId }) {
             return <HobbiesSection />;
         case 'skills':
             return <SkillsSection />;
+        case 'notes':
+            return <NotesSection />;
     }
 }
 
@@ -314,5 +320,45 @@ function LinkRow({ links }: { links: { label: string; href: string }[] }) {
                 </li>
             ))}
         </ul>
+    );
+}
+
+/**
+ * The bookshelf's notes as a list: each one folds open in place (a native
+ * <details>, so it works without JavaScript and with the keyboard).
+ */
+function NotesSection() {
+    return (
+        <div className="flex flex-col gap-3">
+            <p className="text-muted">
+                The lobby bookshelf: what I know, problems I&apos;ve solved, and things I learned
+                along the way.
+            </p>
+            <ul className="flex flex-col gap-2">
+                {notes.map((note) => (
+                    <li key={note.slug}>
+                        <details className="group rounded-lg border border-line p-3">
+                            <summary className="flex cursor-pointer list-none flex-col gap-1">
+                                <span
+                                    className="font-mono text-xs uppercase tracking-widest"
+                                    style={{ color: NOTE_AREAS[note.area].color }}
+                                >
+                                    {NOTE_KINDS[note.kind]} · {NOTE_AREAS[note.area].label}
+                                </span>
+                                <span className="font-semibold group-open:text-accent">
+                                    {note.title}
+                                </span>
+                                <span className="text-sm text-muted">{note.summary}</span>
+                            </summary>
+                            <div
+                                className="book-prose mt-3 border-t border-line pt-3"
+                                // Our own markdown, rendered at build time (content/notes.ts).
+                                dangerouslySetInnerHTML={{ __html: note.html }}
+                            />
+                        </details>
+                    </li>
+                ))}
+            </ul>
+        </div>
     );
 }

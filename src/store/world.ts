@@ -20,7 +20,8 @@ export type Mode =
     | 'exploring' // walking around
     | 'paused' // stopped (Esc or the pause button), not reading anything
     | 'reading' // a content panel is open
-    | 'seated'; // sitting at a desk, reading its screen (see world/seats)
+    | 'seated' // sitting at a desk, reading its screen (see world/seats)
+    | 'holding'; // holding a book from the shelf, reading it (see world/bookshelf)
 
 /**
  * How mouse/finger movement turns the camera:
@@ -29,7 +30,8 @@ export type Mode =
  */
 export type LookMode = 'pointer-lock' | 'drag';
 
-export type SectionId = 'about' | 'currently' | 'projects' | 'career' | 'hobbies' | 'skills';
+export type SectionId =
+    'about' | 'currently' | 'projects' | 'career' | 'hobbies' | 'skills' | 'notes';
 
 /**
  * What a content panel shows. A discriminated union: the `kind` field tells
@@ -55,14 +57,21 @@ export type SeatId = 'lobby-desk' | 'lobby-career';
 export type SeatPhase = 'arriving' | 'seated' | 'leaving';
 
 /**
+ * Taking a book from the shelf: it slides out and flies to you ("taking"),
+ * lies open while you read ("open"), then closes and flies back ("returning").
+ */
+export type BookPhase = 'taking' | 'open' | 'returning';
+
+/**
  * What happens when the player uses an interactable: open a content panel,
- * toggle a door, or sit down at a screen. Plain data (no functions), so it's
- * easy to store, compare and log.
+ * toggle a door, sit down at a screen, or take a book (a note's slug). Plain
+ * data (no functions), so it's easy to store, compare and log.
  */
 export type Action =
     | { kind: 'panel'; panel: Panel }
     | { kind: 'door'; door: string }
-    | { kind: 'sit'; seat: SeatId };
+    | { kind: 'sit'; seat: SeatId }
+    | { kind: 'book'; book: string };
 
 /** The interactable the crosshair is on. `id` is unique per object in the world. */
 export type FocusTarget = { id: string; label: string; action: Action };
@@ -94,6 +103,13 @@ type WorldState = {
     /** Start getting up (the camera glides back, then walking resumes). */
     standUp: () => void;
     setSeatPhase: (phase: SeatPhase | null) => void;
+    /** The book in your hands (a note's slug; null when none), and where it is in its trip. */
+    book: string | null;
+    bookPhase: BookPhase | null;
+    takeBook: (slug: string) => void;
+    /** Start putting the book back (it closes and flies to its shelf, then walking resumes). */
+    putBack: () => void;
+    setBookPhase: (phase: BookPhase | null) => void;
     /** Real clock, or a fixed daytime/night-time preview. */
     lighting: LightingMode;
     setLighting: (lighting: LightingMode) => void;
@@ -144,6 +160,12 @@ export const useWorld = create<WorldState>((set) => ({
     standUp: () =>
         set((s) => (s.seat && s.seatPhase !== 'leaving' ? { seatPhase: 'leaving' } : {})),
     setSeatPhase: (seatPhase) => set(seatPhase ? { seatPhase } : { seat: null, seatPhase: null }),
+    book: null,
+    bookPhase: null,
+    takeBook: (book) => set({ book, bookPhase: 'taking', mode: 'holding', focused: null }),
+    putBack: () =>
+        set((s) => (s.book && s.bookPhase !== 'returning' ? { bookPhase: 'returning' } : {})),
+    setBookPhase: (bookPhase) => set(bookPhase ? { bookPhase } : { book: null, bookPhase: null }),
     lighting: 'live',
     setLighting: (lighting) => set({ lighting }),
     season: 'live',
@@ -195,6 +217,9 @@ export function performAction(action: Action) {
         s.toggleDoor(action.door);
     } else if (action.kind === 'sit') {
         s.sit(action.seat);
+        releaseMouse();
+    } else if (action.kind === 'book') {
+        s.takeBook(action.book);
         releaseMouse();
     } else {
         s.open(action.panel);

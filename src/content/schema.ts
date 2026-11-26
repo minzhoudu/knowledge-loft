@@ -133,5 +133,41 @@ export type Project = z.infer<typeof ProjectSchema>;
 export type Company = z.infer<typeof CompanySchema>;
 export type Hobby = z.infer<typeof HobbySchema>;
 export type About = z.infer<typeof AboutSchema>;
+/**
+ * The lobby bookshelf is a knowledge base: each book is a markdown file in
+ * src/content/notes/. Three kinds, which also look different on the shelf.
+ */
+export const NOTE_KINDS = {
+    note: 'Field note', // what I know about a topic and how I approach it (a hardcover)
+    case: 'Case file', // one hard problem: context, approach, result (a tall binder)
+    til: 'Today I learned', // one small, sharp lesson (a slim notebook)
+} as const;
+export type NoteKind = keyof typeof NOTE_KINDS;
+
+/** What a note is about; sets the colour of its cover. */
+export const NOTE_AREAS = {
+    frontend: { label: 'Frontend', color: '#35607d' },
+    backend: { label: 'Backend', color: '#5a6b34' },
+    ai: { label: 'AI', color: '#6d4483' },
+    commerce: { label: 'Ecommerce', color: '#9a6a28' },
+    leadership: { label: 'Leadership', color: '#7f3535' },
+    craft: { label: 'Craft', color: '#2f6f66' },
+} as const;
+export type NoteArea = keyof typeof NOTE_AREAS;
+
+const keysOf = <T extends Record<string, unknown>>(o: T) =>
+    Object.keys(o) as [keyof T & string, ...(keyof T & string)[]];
+
+/** A note's frontmatter (the block between the --- lines at the top of the file). */
+export const NoteMetaSchema = z.object({
+    /** Printed on the spine, so keep it short. */
+    title: z.string().min(1).max(34),
+    kind: z.enum(keysOf(NOTE_KINDS)),
+    area: z.enum(keysOf(NOTE_AREAS)),
+    /** One line: shown under the title and in lists. */
+    summary: z.string().min(1).max(180),
+    updated: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use YYYY-MM-DD'),
+});
+
 export type Skill = z.infer<typeof SkillSchema>;
 export type Currently = z.infer<typeof CurrentlySchema>;

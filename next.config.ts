@@ -12,6 +12,9 @@ const nextConfig: NextConfig = {
                 loaders: ['@tailwindcss/turbopack'],
                 as: '*.css',
             },
+            // `import.meta.glob('./notes/*.md', { query: '?raw' })` gives each markdown
+            // file's text (the bookshelf notes, see src/content/notes.ts).
+            '*.md': { condition: { query: '?raw' }, type: 'text' },
         },
     },
 };

@@ -109,7 +109,7 @@ export function HobbiesRoom() {
             />
 
             {/* lamps come on at dusk: the floor lamp by the lounge, and a ceiling light */}
-            <Lamp position={[CENTER.x + 2.3, 1.75, CENTER.z + 2.2]} intensity={8} bulbRadius={0} />
+            <Lamp position={[CENTER.x + 2.3, 1.5, CENTER.z + 2.2]} intensity={8} bulbRadius={0} />
             <Lamp position={[CENTER.x, H - 0.5, CENTER.z - 1.5]} intensity={14} color="#ffe2b8" />
         </group>
     );
@@ -223,15 +223,8 @@ function Lounge() {
             <Model name="lounge-chair" position={[cx + 1.25, 0, cz - 0.5]} rotationY={-0.35} />
             <Model name="round-table" position={[cx, 0, cz + 0.55]} />
 
-            {/* floor lamp (a Lamp sits in its shade, see HobbiesRoom) */}
-            <RigidBody type="fixed" colliders="cuboid">
-                <Block
-                    size={[0.06, 1.6, 0.06]}
-                    position={[cx + 2.3, 0.8, cz + 1.0]}
-                    surface="metal"
-                />
-            </RigidBody>
-            <Block size={[0.4, 0.3, 0.4]} position={[cx + 2.3, 1.75, cz + 1.0]} color="#f3e3c7" />
+            {/* floor lamp; the light that comes on at dusk sits in its shade (the Lamp in HobbiesRoom) */}
+            <Model name="floor-lamp" position={[cx + 2.3, 0, cz + 1.0]} scale={1.35} />
 
             <Model name="cube-shelves" position={[x1 - 0.2, 0, 1.4]} />
             {/* a record player on top: the vinyl crackle you hear in here */}

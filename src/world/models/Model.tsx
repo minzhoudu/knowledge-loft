@@ -15,6 +15,7 @@ export type ModelName =
     | 'cube-shelves'
     | 'desk'
     | 'desk-lamp'
+    | 'floor-lamp'
     | 'gaming-pc'
     | 'industrial-pendant'
     | 'laptop'
