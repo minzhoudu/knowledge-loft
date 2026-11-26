@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import type { LightingMode } from '@/world/environment/time';
 
 /**
  * Global world state.
@@ -58,6 +59,9 @@ type WorldState = {
     openPanel: Panel | null;
     /** Door id -> open? Doors not listed are closed. */
     doors: Record<string, boolean>;
+    /** Real clock, or a fixed daytime/night-time preview. */
+    lighting: LightingMode;
+    setLighting: (lighting: LightingMode) => void;
     setMode: (mode: Mode) => void;
     set: (partial: Partial<Pick<WorldState, 'look' | 'touch' | 'lockFailed' | 'mode'>>) => void;
     setFocused: (focused: FocusTarget | null) => void;
@@ -74,6 +78,8 @@ export const useWorld = create<WorldState>((set) => ({
     focused: null,
     openPanel: null,
     doors: {},
+    lighting: 'live',
+    setLighting: (lighting) => set({ lighting }),
     setMode: (mode) => set({ mode }),
     set: (partial) => set(partial),
     setFocused: (focused) => set({ focused }),

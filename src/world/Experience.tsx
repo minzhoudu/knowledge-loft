@@ -34,7 +34,6 @@ export default function Experience() {
                     dpr={[1, 1.5]} // cap pixel ratio: 2x/3x screens would otherwise render 4-9x the pixels
                     camera={{ fov: 65, near: 0.05, far: 200 }}
                 >
-                    <color attach="background" args={['#cdd6de']} />
                     <Lighting />
                     <Suspense fallback={null}>
                         {/* Physics suspends while the Rapier WASM module downloads */}

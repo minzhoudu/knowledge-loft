@@ -46,6 +46,21 @@ export const AboutSchema = z.object({
     name: z.string().min(1),
     headline: z.string().min(1),
     location: z.string().optional(),
+    /**
+     * IANA time zone of the studio, e.g. "Europe/Belgrade". Drives live
+     * day/night lighting. Checked against the browser's list of zones.
+     */
+    timeZone: z
+        .string()
+        .refine((tz) => {
+            try {
+                new Intl.DateTimeFormat('en', { timeZone: tz });
+                return true;
+            } catch {
+                return false;
+            }
+        }, 'Unknown time zone; use an IANA name like "Europe/Belgrade"')
+        .optional(),
     bio: z.string().min(1),
     links: z.array(LinkSchema).default([]),
 });

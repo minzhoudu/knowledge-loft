@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { performAction, useWorld, type FocusTarget } from '@/store/world';
 import { enterWorld, isTouchDevice } from '@/world/player/input';
+import { Clock, LightingToggle } from './Clock';
 import { Joystick } from './Joystick';
 import { PanelBody, panelTitle } from './sections';
 
@@ -55,6 +56,7 @@ export function Hud() {
                         aria-hidden
                         className="pointer-events-none fixed left-1/2 top-1/2 size-1.5 -translate-1/2 rounded-full bg-white/90 shadow-[0_0_0_1px_rgba(0,0,0,0.35)]"
                     />
+                    <Clock className="pointer-events-none fixed left-[max(16px,env(safe-area-inset-left,0px))] top-[calc(env(safe-area-inset-top,0px)+20px)] rounded-full bg-panel px-3 py-1.5 text-fg backdrop-blur" />
 
                     {focused && !touch && (
                         <div className="pointer-events-none fixed left-1/2 top-[58%] -translate-x-1/2 rounded-lg bg-panel px-3 py-2 text-sm text-fg backdrop-blur">
@@ -95,9 +97,7 @@ export function Hud() {
             {(mode === 'intro' || mode === 'paused') && (
                 <div className="fixed inset-0 grid place-items-center bg-black/35 px-4">
                     <div className="flex w-full max-w-sm flex-col gap-4 rounded-2xl bg-panel p-6 text-fg backdrop-blur">
-                        <p className="font-mono text-xs uppercase tracking-widest text-muted">
-                            Greybox
-                        </p>
+                        <Clock className="text-muted" />
                         <h1 className="font-display text-2xl font-bold">
                             {mode === 'intro' ? 'Studio loft' : 'Paused'}
                         </h1>
@@ -133,6 +133,7 @@ export function Hud() {
                         >
                             {mode === 'intro' ? 'Enter' : 'Resume'}
                         </button>
+                        <LightingToggle />
                         {lockFailed && (
                             <div
                                 className="flex flex-col gap-2 rounded-lg border border-line p-3 text-sm"

@@ -5,6 +5,7 @@ import { CuboidCollider, RigidBody } from '@react-three/rapier';
 import { hobbies } from '@/content';
 import { Block, GREY } from '@/world/greybox/Block';
 import { Label } from '@/world/greybox/Label';
+import { Lamp } from '@/world/environment/Lamp';
 import { Interactable } from '@/world/interaction/Interactable';
 import { CENTER, DOOR, layoutHobbies, ROOM, WINDOW, type HobbySpot } from './layout';
 
@@ -111,14 +112,9 @@ export function HobbiesRoom() {
                 rotationY={Math.PI / 2}
             />
 
-            {/* a warm floor lamp by the lounge, plus a soft ceiling light */}
-            <pointLight
-                position={[CENTER.x + 2.3, 1.7, CENTER.z + 2.2]}
-                intensity={6}
-                color="#ffd39a"
-                decay={2}
-            />
-            <pointLight position={[CENTER.x, H - 0.6, CENTER.z - 1.5]} intensity={10} decay={2} />
+            {/* lamps come on at dusk: the floor lamp by the lounge, and a ceiling light */}
+            <Lamp position={[CENTER.x + 2.3, 1.75, CENTER.z + 2.2]} intensity={8} bulbRadius={0} />
+            <Lamp position={[CENTER.x, H - 0.5, CENTER.z - 1.5]} intensity={14} color="#ffe2b8" />
 
             <Grid
                 args={[W, D]}

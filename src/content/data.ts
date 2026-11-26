@@ -7,6 +7,7 @@ export const about = {
     name: 'Pavle Jovanović',
     headline: 'Software engineer',
     location: 'Novi Sad, Serbia',
+    timeZone: 'Europe/Belgrade',
     bio: 'Two or three sentences about who you are, what you work on, and what you care about. This text shows up in the 3D world, on the quick view page, and later feeds the AI assistant.',
     links: [
         { label: 'GitHub', href: 'https://github.com/' },

@@ -6,6 +6,7 @@ import { DoubleSide } from 'three';
 import { Block, GREY } from '@/world/greybox/Block';
 import { Door } from '@/world/greybox/Door';
 import { Label } from '@/world/greybox/Label';
+import { Lamp } from '@/world/environment/Lamp';
 import { Interactable } from '@/world/interaction/Interactable';
 import { DOORS, MARKERS, ROOM, WINDOW } from './layout';
 
@@ -187,9 +188,27 @@ export function Lobby() {
                 sectionColor="#80868c"
                 fadeDistance={40}
             />
+
+            {/* pendant lamps that come on at dusk: over the exhibit, the desk and the lounge */}
+            {PENDANTS.map(([x, y, z]) => (
+                <group key={`${x},${z}`}>
+                    <Block
+                        size={[0.02, H - y - 0.12, 0.02]}
+                        position={[x, (H + y + 0.12) / 2, z]}
+                        color={GREY.dark}
+                    />
+                    <Lamp position={[x, y, z]} intensity={12} bulbRadius={0.14} />
+                </group>
+            ))}
         </group>
     );
 }
+
+const PENDANTS: [number, number, number][] = [
+    [MARKERS.plinth.position[0], 3.0, MARKERS.plinth.position[2]],
+    [MARKERS.desk.position[0], 2.5, MARKERS.desk.position[2] + 0.3],
+    [MARKERS.coffeeTable.position[0], 3.0, MARKERS.coffeeTable.position[2] + 0.6],
+];
 
 /** A doorway whose room isn't built yet: dark fill you can see, collider you can't pass. */
 function ClosedDoor({
