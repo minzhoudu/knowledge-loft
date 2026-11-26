@@ -34,7 +34,8 @@ export type SectionId = 'about' | 'projects' | 'career' | 'hobbies';
 export type Panel =
     | { kind: 'section'; id: SectionId }
     | { kind: 'project'; slug: string }
-    | { kind: 'company'; slug: string };
+    | { kind: 'company'; slug: string }
+    | { kind: 'hobby'; slug: string };
 
 /**
  * What happens when the player uses an interactable: open a content panel,

@@ -23,6 +23,7 @@ export const DOORS = {
     // Built rooms get a real door that the player opens and closes.
     projects: { wall: 'left', center: 1.6, width: 1.3, height: 2.4, built: true },
     career: { wall: 'back', center: 5.4, width: 1.3, height: 2.4, built: true },
+    hobbies: { wall: 'right', center: -2.0, width: 1.3, height: 2.4, built: true },
 } as const;
 
 type Vec3 = [number, number, number];

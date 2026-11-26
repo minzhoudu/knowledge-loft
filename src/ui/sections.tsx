@@ -21,6 +21,8 @@ export function panelTitle(panel: Panel) {
             return projects.find((p) => p.slug === panel.slug)?.title ?? 'Project';
         case 'company':
             return companies.find((c) => c.slug === panel.slug)?.name ?? 'Company';
+        case 'hobby':
+            return hobbies.find((h) => h.slug === panel.slug)?.name ?? 'Hobby';
     }
 }
 
@@ -32,7 +34,15 @@ export function PanelBody({ panel }: { panel: Panel }) {
             return <ProjectDetail slug={panel.slug} />;
         case 'company':
             return <CompanyDetail slug={panel.slug} />;
+        case 'hobby':
+            return <HobbyDetail slug={panel.slug} />;
     }
+}
+
+function HobbyDetail({ slug }: { slug: string }) {
+    const h = hobbies.find((x) => x.slug === slug);
+    if (!h) return <p className="text-muted">This hobby no longer exists.</p>;
+    return <p className="leading-relaxed">{h.summary}</p>;
 }
 
 function CompanyDetail({ slug }: { slug: string }) {

@@ -27,6 +27,9 @@ export function Lobby() {
     const lz1 = left.center + left.width / 2;
     const bx0 = back.center - back.width / 2;
     const bx1 = back.center + back.width / 2;
+    const right = DOORS.hobbies;
+    const rz0 = right.center - right.width / 2;
+    const rz1 = right.center + right.width / 2;
 
     return (
         <group>
@@ -61,8 +64,14 @@ export function Lobby() {
                     color={GREY.wall}
                 />
 
-                {/* right wall (x = +X) */}
-                <Wall from={[X + T / 2, -Z]} to={[X + T / 2, Z]} axis="z" />
+                {/* right wall (x = +X) with the Hobbies doorway */}
+                <Wall from={[X + T / 2, -Z]} to={[X + T / 2, rz0]} axis="z" />
+                <Wall from={[X + T / 2, rz1]} to={[X + T / 2, Z]} axis="z" />
+                <Block
+                    size={[T, H - right.height, right.width]}
+                    position={[X + T / 2, (H + right.height) / 2, right.center]}
+                    color={GREY.wall}
+                />
 
                 {/* window wall (z = +Z): solid around one big opening */}
                 <Wall from={[-X - T, Z + T / 2]} to={[WINDOW.x0, Z + T / 2]} axis="x" />
@@ -136,6 +145,31 @@ export function Lobby() {
                     rotationY={0}
                     width={back.width}
                     height={back.height}
+                />
+            )}
+            <Label
+                title="Hobbies"
+                subtitle={right.built ? undefined : 'Coming soon'}
+                width={1.3}
+                position={[X - 0.01, right.height + 0.35, right.center]}
+                rotationY={-Math.PI / 2}
+            />
+            {right.built ? (
+                <Door
+                    id="lobby-hobbies"
+                    label="Door · Hobbies"
+                    hinge={[X + T / 2, rz0]}
+                    rotationY={-Math.PI / 2} // hinge → latch runs along +z
+                    swing={1} // opens toward +x, into the Hobbies room
+                    width={right.width}
+                    height={right.height}
+                />
+            ) : (
+                <ClosedDoor
+                    position={[X + T / 2, right.height / 2, right.center]}
+                    rotationY={Math.PI / 2}
+                    width={right.width}
+                    height={right.height}
                 />
             )}
 
