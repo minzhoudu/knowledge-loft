@@ -13,13 +13,13 @@ Add `?debug` to the URL to see every physics collider as a wireframe.
 
 ## Stack
 
-| Concern | Choice |
-|---|---|
-| App | Next.js (App Router), TypeScript, Tailwind |
-| 3D | three.js via React Three Fiber + drei |
-| Physics / walking | Rapier (`@react-three/rapier`) |
-| World state | Zustand |
-| Content | Typed data validated with Zod |
+| Concern           | Choice                                     |
+| ----------------- | ------------------------------------------ |
+| App               | Next.js (App Router), TypeScript, Tailwind |
+| 3D                | three.js via React Three Fiber + drei      |
+| Physics / walking | Rapier (`@react-three/rapier`)             |
+| World state       | Zustand                                    |
+| Content           | Typed data validated with Zod              |
 
 ## Layout
 

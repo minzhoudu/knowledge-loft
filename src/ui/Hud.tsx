@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import { useWorld } from "@/store/world";
-import { enterWorld, isTouchDevice } from "@/world/player/input";
-import { Joystick } from "./Joystick";
-import { Section, SECTION_TITLES } from "./sections";
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { useWorld } from '@/store/world';
+import { enterWorld, isTouchDevice } from '@/world/player/input';
+import { Joystick } from './Joystick';
+import { Section, SECTION_TITLES } from './sections';
 
 /** Resume walking with whichever look style is already in use. */
 function resume() {
-  enterWorld({ preferDrag: useWorld.getState().look === "drag" });
+    enterWorld({ preferDrag: useWorld.getState().look === 'drag' });
 }
 
 /**
@@ -18,135 +18,181 @@ function resume() {
  * purpose: text stays crisp, selectable and accessible, which 3D text never is.
  */
 export function Hud() {
-  const mode = useWorld((s) => s.mode);
-  const touch = useWorld((s) => s.touch);
-  const lockFailed = useWorld((s) => s.lockFailed);
-  const focused = useWorld((s) => s.focused);
-  const openPanel = useWorld((s) => s.openPanel);
-  // Decides which controls to describe before the visitor has entered.
-  const [touchDevice] = useState(isTouchDevice);
+    const mode = useWorld((s) => s.mode);
+    const touch = useWorld((s) => s.touch);
+    const lockFailed = useWorld((s) => s.lockFailed);
+    const focused = useWorld((s) => s.focused);
+    const openPanel = useWorld((s) => s.openPanel);
+    // Decides which controls to describe before the visitor has entered.
+    const [touchDevice] = useState(isTouchDevice);
 
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      const s = useWorld.getState();
-      if (e.code === "KeyE" && s.mode === "exploring" && s.focused) {
-        s.open(s.focused.id);
-        document.exitPointerLock();
-      } else if (e.code === "Escape" && s.mode === "reading") {
-        s.close();
-      } else if (e.code === "Escape" && s.mode === "exploring" && s.look === "drag") {
-        // Pointer lock releases on Esc by itself; drag mode needs to be told.
-        s.setMode("paused");
-      }
-    }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, []);
+    useEffect(() => {
+        function onKey(e: KeyboardEvent) {
+            const s = useWorld.getState();
+            if (e.code === 'KeyE' && s.mode === 'exploring' && s.focused) {
+                s.open(s.focused.id);
+                document.exitPointerLock();
+            } else if (e.code === 'Escape' && s.mode === 'reading') {
+                s.close();
+            } else if (e.code === 'Escape' && s.mode === 'exploring' && s.look === 'drag') {
+                // Pointer lock releases on Esc by itself; drag mode needs to be told.
+                s.setMode('paused');
+            }
+        }
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, []);
 
-  return (
-    <>
-      {mode === "exploring" && (
+    return (
         <>
-          <div aria-hidden className="pointer-events-none fixed left-1/2 top-1/2 size-1.5 -translate-1/2 rounded-full bg-white/90 shadow-[0_0_0_1px_rgba(0,0,0,0.35)]" />
+            {mode === 'exploring' && (
+                <>
+                    <div
+                        aria-hidden
+                        className="pointer-events-none fixed left-1/2 top-1/2 size-1.5 -translate-1/2 rounded-full bg-white/90 shadow-[0_0_0_1px_rgba(0,0,0,0.35)]"
+                    />
 
-          {focused && !touch && (
-            <div className="pointer-events-none fixed left-1/2 top-[58%] -translate-x-1/2 rounded-lg bg-panel px-3 py-2 text-sm text-fg backdrop-blur">
-              <kbd className="mr-2 rounded border border-line px-1.5 py-0.5 font-mono text-xs">E</kbd>
-              {focused.label}
-            </div>
-          )}
+                    {focused && !touch && (
+                        <div className="pointer-events-none fixed left-1/2 top-[58%] -translate-x-1/2 rounded-lg bg-panel px-3 py-2 text-sm text-fg backdrop-blur">
+                            <kbd className="mr-2 rounded border border-line px-1.5 py-0.5 font-mono text-xs">
+                                E
+                            </kbd>
+                            {focused.label}
+                        </div>
+                    )}
 
-          {touch && (
-            <>
-              <Joystick />
-              <button
-                type="button"
-                onClick={() => useWorld.getState().setMode("paused")}
-                className="fixed right-[max(16px,env(safe-area-inset-right,0px))] top-[calc(env(safe-area-inset-top,0px)+16px)] rounded-full bg-panel px-4 py-2 text-sm font-semibold text-fg backdrop-blur"
-              >
-                Pause
-              </button>
-              {focused && (
-                <button
-                  type="button"
-                  onClick={() => useWorld.getState().open(focused.id)}
-                  className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+48px)] right-[max(24px,env(safe-area-inset-right,0px))] max-w-[45vw] rounded-2xl bg-accent px-5 py-3 text-left text-sm font-semibold text-black shadow-lg"
+                    {touch && (
+                        <>
+                            <Joystick />
+                            <button
+                                type="button"
+                                onClick={() => useWorld.getState().setMode('paused')}
+                                className="fixed right-[max(16px,env(safe-area-inset-right,0px))] top-[calc(env(safe-area-inset-top,0px)+16px)] rounded-full bg-panel px-4 py-2 text-sm font-semibold text-fg backdrop-blur"
+                            >
+                                Pause
+                            </button>
+                            {focused && (
+                                <button
+                                    type="button"
+                                    onClick={() => useWorld.getState().open(focused.id)}
+                                    className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+48px)] right-[max(24px,env(safe-area-inset-right,0px))] max-w-[45vw] rounded-2xl bg-accent px-5 py-3 text-left text-sm font-semibold text-black shadow-lg"
+                                >
+                                    Inspect
+                                    <span className="block text-xs font-normal opacity-80">
+                                        {focused.label}
+                                    </span>
+                                </button>
+                            )}
+                        </>
+                    )}
+                </>
+            )}
+
+            {(mode === 'intro' || mode === 'paused') && (
+                <div className="fixed inset-0 grid place-items-center bg-black/35 px-4">
+                    <div className="flex w-full max-w-sm flex-col gap-4 rounded-2xl bg-panel p-6 text-fg backdrop-blur">
+                        <p className="font-mono text-xs uppercase tracking-widest text-muted">
+                            Greybox · Lobby
+                        </p>
+                        <h1 className="font-display text-2xl font-bold">
+                            {mode === 'intro' ? 'Studio loft' : 'Paused'}
+                        </h1>
+                        {touchDevice ? (
+                            <ul className="flex flex-col gap-1 text-sm text-muted">
+                                <li>Left thumb: drag to walk</li>
+                                <li>Right thumb: drag to look around</li>
+                                <li>
+                                    Tap <span className="text-fg">Inspect</span> when you face a
+                                    warm-coloured object
+                                </li>
+                            </ul>
+                        ) : (
+                            <ul className="flex flex-col gap-1 text-sm text-muted">
+                                <li>
+                                    <Key>W A S D</Key> walk, <Key>Shift</Key> run
+                                </li>
+                                <li>
+                                    <Key>Mouse</Key> look around
+                                </li>
+                                <li>
+                                    <Key>E</Key> inspect the warm-coloured objects
+                                </li>
+                                <li>
+                                    <Key>Esc</Key> pause
+                                </li>
+                            </ul>
+                        )}
+                        <button
+                            type="button"
+                            onClick={mode === 'intro' ? () => enterWorld() : resume}
+                            className="rounded-lg bg-accent px-4 py-2.5 font-semibold text-black transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                        >
+                            {mode === 'intro' ? 'Enter' : 'Resume'}
+                        </button>
+                        {lockFailed && (
+                            <div
+                                className="flex flex-col gap-2 rounded-lg border border-line p-3 text-sm"
+                                role="status"
+                            >
+                                <p className="text-muted">
+                                    The browser didn&apos;t capture the mouse. Wait a second and try
+                                    again, or look around by dragging instead.
+                                </p>
+                                <button
+                                    type="button"
+                                    onClick={() => enterWorld({ preferDrag: true })}
+                                    className="self-start text-accent underline-offset-4 hover:underline"
+                                >
+                                    Use drag to look
+                                </button>
+                            </div>
+                        )}
+                        <Link
+                            href="/quick"
+                            className="text-center text-sm text-muted underline-offset-4 hover:underline"
+                        >
+                            Skip the tour: quick view
+                        </Link>
+                    </div>
+                </div>
+            )}
+
+            {mode === 'reading' && openPanel && (
+                <div
+                    className="fixed inset-0 flex items-end justify-end bg-black/25 p-4 sm:items-center"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="panel-title"
                 >
-                  Inspect
-                  <span className="block text-xs font-normal opacity-80">{focused.label}</span>
-                </button>
-              )}
-            </>
-          )}
+                    <section className="flex max-h-[85%] w-full max-w-md flex-col gap-4 overflow-y-auto rounded-2xl bg-panel p-6 text-fg backdrop-blur">
+                        <div className="flex items-center justify-between gap-4">
+                            <h2 id="panel-title" className="font-display text-xl font-bold">
+                                {SECTION_TITLES[openPanel]}
+                            </h2>
+                            <button
+                                type="button"
+                                autoFocus
+                                onClick={() => {
+                                    useWorld.getState().close();
+                                    resume();
+                                }}
+                                className="shrink-0 rounded-lg border border-line px-3 py-1.5 text-sm hover:border-accent focus-visible:outline-2 focus-visible:outline-accent"
+                            >
+                                Back to walking
+                            </button>
+                        </div>
+                        <Section id={openPanel} />
+                    </section>
+                </div>
+            )}
         </>
-      )}
-
-      {(mode === "intro" || mode === "paused") && (
-        <div className="fixed inset-0 grid place-items-center bg-black/35 px-4">
-          <div className="flex w-full max-w-sm flex-col gap-4 rounded-2xl bg-panel p-6 text-fg backdrop-blur">
-            <p className="font-mono text-xs uppercase tracking-widest text-muted">Greybox · Lobby</p>
-            <h1 className="font-display text-2xl font-bold">{mode === "intro" ? "Studio loft" : "Paused"}</h1>
-            {touchDevice ? (
-              <ul className="flex flex-col gap-1 text-sm text-muted">
-                <li>Left thumb: drag to walk</li>
-                <li>Right thumb: drag to look around</li>
-                <li>Tap <span className="text-fg">Inspect</span> when you face a warm-coloured object</li>
-              </ul>
-            ) : (
-              <ul className="flex flex-col gap-1 text-sm text-muted">
-                <li><Key>W A S D</Key> walk, <Key>Shift</Key> run</li>
-                <li><Key>Mouse</Key> look around</li>
-                <li><Key>E</Key> inspect the warm-coloured objects</li>
-                <li><Key>Esc</Key> pause</li>
-              </ul>
-            )}
-            <button
-              type="button"
-              onClick={mode === "intro" ? () => enterWorld() : resume}
-              className="rounded-lg bg-accent px-4 py-2.5 font-semibold text-black transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-            >
-              {mode === "intro" ? "Enter" : "Resume"}
-            </button>
-            {lockFailed && (
-              <div className="flex flex-col gap-2 rounded-lg border border-line p-3 text-sm" role="status">
-                <p className="text-muted">The browser didn&apos;t capture the mouse. Wait a second and try again, or look around by dragging instead.</p>
-                <button type="button" onClick={() => enterWorld({ preferDrag: true })} className="self-start text-accent underline-offset-4 hover:underline">
-                  Use drag to look
-                </button>
-              </div>
-            )}
-            <Link href="/quick" className="text-center text-sm text-muted underline-offset-4 hover:underline">
-              Skip the tour: quick view
-            </Link>
-          </div>
-        </div>
-      )}
-
-      {mode === "reading" && openPanel && (
-        <div className="fixed inset-0 flex items-end justify-end bg-black/25 p-4 sm:items-center" role="dialog" aria-modal="true" aria-labelledby="panel-title">
-          <section className="flex max-h-[85%] w-full max-w-md flex-col gap-4 overflow-y-auto rounded-2xl bg-panel p-6 text-fg backdrop-blur">
-            <div className="flex items-center justify-between gap-4">
-              <h2 id="panel-title" className="font-display text-xl font-bold">{SECTION_TITLES[openPanel]}</h2>
-              <button
-                type="button"
-                autoFocus
-                onClick={() => {
-                  useWorld.getState().close();
-                  resume();
-                }}
-                className="shrink-0 rounded-lg border border-line px-3 py-1.5 text-sm hover:border-accent focus-visible:outline-2 focus-visible:outline-accent"
-              >
-                Back to walking
-              </button>
-            </div>
-            <Section id={openPanel} />
-          </section>
-        </div>
-      )}
-    </>
-  );
+    );
 }
 
 function Key({ children }: { children: React.ReactNode }) {
-  return <kbd className="rounded border border-line px-1.5 py-0.5 font-mono text-xs text-fg">{children}</kbd>;
+    return (
+        <kbd className="rounded border border-line px-1.5 py-0.5 font-mono text-xs text-fg">
+            {children}
+        </kbd>
+    );
 }

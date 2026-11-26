@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { createContext, useContext, useEffect, useRef, type ReactNode } from "react";
-import type { Group } from "three";
-import { useWorld, type InteractableId } from "@/store/world";
+import { createContext, useContext, useEffect, useRef, type ReactNode } from 'react';
+import type { Group } from 'three';
+import { useWorld, type InteractableId } from '@/store/world';
 
 /**
  * Objects the player can look at and press E on.
@@ -21,22 +21,22 @@ export const useIsFocused = () => useContext(FocusContext);
 type Props = { id: InteractableId; label: string; children: ReactNode };
 
 export function Interactable({ id, label, children }: Props) {
-  const ref = useRef<Group>(null);
-  const focused = useWorld((s) => s.focused?.id === id);
+    const ref = useRef<Group>(null);
+    const focused = useWorld((s) => s.focused?.id === id);
 
-  useEffect(() => {
-    const group = ref.current;
-    if (!group) return;
-    group.userData.interactable = { id, label };
-    interactables.set(id, group);
-    return () => {
-      interactables.delete(id);
-    };
-  }, [id, label]);
+    useEffect(() => {
+        const group = ref.current;
+        if (!group) return;
+        group.userData.interactable = { id, label };
+        interactables.set(id, group);
+        return () => {
+            interactables.delete(id);
+        };
+    }, [id, label]);
 
-  return (
-    <group ref={ref}>
-      <FocusContext.Provider value={focused}>{children}</FocusContext.Provider>
-    </group>
-  );
+    return (
+        <group ref={ref}>
+            <FocusContext.Provider value={focused}>{children}</FocusContext.Provider>
+        </group>
+    );
 }

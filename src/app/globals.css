@@ -1,57 +1,57 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 /* Design tokens. The 3D overlay panels always use the dark panel colours;
    the quick view follows the visitor's light/dark preference. */
 :root {
-  --background: #f6f4f1;
-  --foreground: #1c1b19;
-  --muted: #6b665e;
-  --line: rgba(28, 27, 25, 0.14);
-  --accent: #b86a2c;
-  --panel: rgba(20, 19, 18, 0.86);
-  --panel-fg: #ece8e2;
+    --background: #f6f4f1;
+    --foreground: #1c1b19;
+    --muted: #6b665e;
+    --line: rgba(28, 27, 25, 0.14);
+    --accent: #b86a2c;
+    --panel: rgba(20, 19, 18, 0.86);
+    --panel-fg: #ece8e2;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #141312;
-    --foreground: #ece8e2;
-    --muted: #a39d94;
-    --line: rgba(236, 232, 226, 0.14);
-    --accent: #e0a56a;
-    color-scheme: dark;
-  }
+    :root {
+        --background: #141312;
+        --foreground: #ece8e2;
+        --muted: #a39d94;
+        --line: rgba(236, 232, 226, 0.14);
+        --accent: #e0a56a;
+        color-scheme: dark;
+    }
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-fg: var(--foreground);
-  --color-muted: var(--muted);
-  --color-line: var(--line);
-  --color-accent: var(--accent);
-  --color-panel: var(--panel);
-  --font-sans: var(--font-inter), system-ui, sans-serif;
-  --font-display: var(--font-archivo), system-ui, sans-serif;
-  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-fg: var(--foreground);
+    --color-muted: var(--muted);
+    --color-line: var(--line);
+    --color-accent: var(--accent);
+    --color-panel: var(--panel);
+    --font-sans: var(--font-inter), system-ui, sans-serif;
+    --font-display: var(--font-archivo), system-ui, sans-serif;
+    --font-mono: var(--font-plex-mono), ui-monospace, monospace;
 }
 
 /* Overlay panels are dark in both themes, so re-map the tokens inside them. */
 .bg-panel {
-  --foreground: var(--panel-fg);
-  --muted: #a39d94;
-  --line: rgba(236, 232, 226, 0.14);
-  --accent: #e0a56a;
+    --foreground: var(--panel-fg);
+    --muted: #a39d94;
+    --line: rgba(236, 232, 226, 0.14);
+    --accent: #e0a56a;
 }
 
 /* The canvas handles its own touch gestures: no browser scrolling or pinch-zoom on it. */
 #world canvas {
-  touch-action: none;
+    touch-action: none;
 }
 
 body {
-  overscroll-behavior: none;
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans);
+    overscroll-behavior: none;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
 }
