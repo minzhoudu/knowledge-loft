@@ -33,7 +33,14 @@ export const MARKERS = {
     plinth: { position: [-1.4, 0, 0.6] as Vec3 },
     desk: { position: [-4.3, 0, -4.05] as Vec3 },
     shelf: { position: [1.6, 0, -4.79] as Vec3 },
+    /** The Career wall display's bezel (2.36 x 1.38 m, 5 cm deep) on the brick wall. */
     screen: { position: [-1.6, 1.85, -4.95] as Vec3 },
+    /** Its glass: 4 cm inside the bezel, just in front of it. Reading it is a seat you stand at. */
+    careerScreen: {
+        center: [-1.6, 1.85, -4.95 + 0.025 + 0.001] as Vec3,
+        width: 2.28,
+        height: 1.3,
+    },
     sofa: { position: [2.4, 0, 3.15] as Vec3 },
     /** The "currently" letter board, on the right wall between the Hobbies door and the window. */
     currently: { position: [7, 1.65, 1.6] as Vec3 },

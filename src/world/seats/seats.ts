@@ -1,4 +1,5 @@
 import { Matrix4, Quaternion, Vector3, type PerspectiveCamera } from 'three';
+import { about, companies } from '@/content';
 import type { SectionId, SeatId } from '@/store/world';
 import { MARKERS } from '@/world/rooms/lobby/layout';
 
@@ -13,20 +14,62 @@ export type Screen = {
     height: number;
 };
 
+/** One line of a screen's idle picture (a terminal), styled by its role. */
+export type IdleLine = { text: string; tone: 'prompt' | 'title' | 'text' | 'muted' };
+
+/**
+ * A place where you stop and read a screen: sit down at a desk, or stand
+ * in front of a wall display. Using it glides the camera square in front
+ * of the screen (SeatCamera) and puts a real page on it (SeatScreen).
+ */
 export type Seat = {
     screen: Screen;
-    /** What the screen shows while you sit there. */
+    /** Sitting dips the view on the way down; standing just steps up to it. */
+    posture: 'sit' | 'stand';
+    /** What the screen shows while you're there. */
     page: { title: string; section: SectionId };
+    /** What it shows the rest of the time, seen from across the room. */
+    idle: IdleLine[];
 };
 
 const desk = MARKERS.deskScreen;
+const wall = MARKERS.careerScreen;
+
+const years = (start: string, end: string | null) =>
+    `${start.slice(0, 4)}–${end ? end.slice(0, 4) : 'now'}`;
 
 export const SEATS: Record<SeatId, Seat> = {
     'lobby-desk': {
         screen: { center: desk.center, rotationY: 0, width: desk.width, height: desk.height },
+        posture: 'sit',
         page: { title: 'about.md', section: 'about' },
+        idle: [
+            { text: '~ $ whoami', tone: 'prompt' },
+            { text: about.name, tone: 'title' },
+            { text: about.headline, tone: 'muted' },
+            { text: '', tone: 'text' },
+            { text: '~ $ cat about.md', tone: 'prompt' },
+            { text: 'Take a seat to read it.', tone: 'muted' },
+        ],
+    },
+    'lobby-career': {
+        screen: { center: wall.center, rotationY: 0, width: wall.width, height: wall.height },
+        posture: 'stand',
+        page: { title: 'career.md', section: 'career' },
+        idle: [
+            { text: '~ $ git log career --oneline', tone: 'prompt' },
+            ...companies.slice(0, 6).map((c) => ({
+                text: `${years(c.start, c.end).padEnd(11)} ${c.name} · ${c.role}`,
+                tone: 'text' as const,
+            })),
+            { text: '', tone: 'text' },
+            { text: 'Step up to the screen to read more.', tone: 'muted' },
+        ],
     },
 };
+
+export const seatVerb = (seat: Seat) => (seat.posture === 'sit' ? 'Sit down' : 'Read');
+export const leaveLabel = (seat: Seat) => (seat.posture === 'sit' ? 'Stand up' : 'Step back');
 
 /** Room around the screen's edges in the seated view (1 = edge to edge). */
 const MARGIN = 1.22;

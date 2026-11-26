@@ -4,36 +4,43 @@ import { Html } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
 import { useEffect, useMemo } from 'react';
 import { CanvasTexture, SRGBColorSpace, Vector3 } from 'three';
-import { about } from '@/content';
 import { useWorld, type SeatId } from '@/store/world';
 import { Section } from '@/ui/sections';
-import { SEATS, type Seat } from './seats';
+import { leaveLabel, SEATS, type IdleLine, type Seat } from './seats';
 
-/** CSS pixels per metre of screen: the page is laid out at this size, then scaled into place. */
-const PX_PER_M = 1000;
+/**
+ * Every screen's page is laid out this many CSS px wide, then scaled to fit
+ * the glass. A fixed layout width keeps lines a readable length on a small
+ * monitor and a big wall display alike.
+ */
+const PAGE_WIDTH = 960;
 /** Smallest comfortable reading size on the visitor's display, in CSS px. */
 const MIN_TEXT_PX = 15;
 
 /**
- * A monitor's picture, for a seat (see seats.ts).
+ * A screen's picture, for a seat (see seats.ts).
  *
  * Two layers, on purpose:
  * - Always: a lit "terminal" image, drawn once into a canvas texture. It's a
  *   real 3D surface, so it's lit, reflected and bloomed like everything else,
  *   and it's what you see from across the room.
- * - While seated: the actual page, as real HTML (drei's <Html transform>).
+ * - While you're at it: the actual page, as real HTML (drei's <Html transform>).
  *   drei gives the element the same perspective transform as the screen
  *   (a CSS matrix3d computed from the camera), so it looks painted on the
- *   monitor but stays DOM: sharp text, scrolling, clickable links, and the
+ *   glass but stays DOM: sharp text, scrolling, clickable links, and the
  *   same React component the panels and the quick view use. The catch is
  *   that DOM sits on top of the canvas, ignoring depth: anything in front of
  *   the screen wouldn't hide it. That's why it only appears once you're
- *   seated, square in front of the screen with nothing in between.
+ *   square in front of the screen with nothing in between.
  */
-export function DeskScreen({ seat }: { seat: SeatId }) {
-    const { screen, page } = SEATS[seat];
+export function SeatScreen({ seat }: { seat: SeatId }) {
+    const config = SEATS[seat];
+    const { screen } = config;
     const reading = useWorld((s) => s.seat === seat && s.seatPhase === 'seated');
-    const texture = useMemo(() => drawIdle(screen.width, screen.height), [screen]);
+    const texture = useMemo(
+        () => drawIdle(screen.width, screen.height, config.idle),
+        [screen, config.idle],
+    );
     useEffect(() => () => texture.dispose(), [texture]);
 
     return (
@@ -50,7 +57,7 @@ export function DeskScreen({ seat }: { seat: SeatId }) {
                     emissiveIntensity={0.85}
                 />
             </mesh>
-            {reading && <ScreenPage seat={SEATS[seat]} title={page.title} section={page.section} />}
+            {reading && <ScreenPage seat={config} />}
         </group>
     );
 }
@@ -58,20 +65,13 @@ export function DeskScreen({ seat }: { seat: SeatId }) {
 const left = new Vector3();
 const right = new Vector3();
 
-function ScreenPage({
-    seat,
-    title,
-    section,
-}: {
-    seat: Seat;
-    title: string;
-    section: Seat['page']['section'];
-}) {
-    const { screen } = seat;
+function ScreenPage({ seat }: { seat: Seat }) {
+    const { screen, page } = seat;
     const get = useThree((s) => s.get);
     const size = useThree((s) => s.size);
-    const w = Math.round(screen.width * PX_PER_M);
-    const h = Math.round(screen.height * PX_PER_M);
+    const pxPerMetre = PAGE_WIDTH / screen.width;
+    const w = PAGE_WIDTH;
+    const h = Math.round(screen.height * pxPerMetre);
 
     // How big will the page look? Project the screen's left and right edges
     // into the viewport and compare with the page's layout width. On a large
@@ -94,7 +94,7 @@ function ScreenPage({
         <Html
             transform
             // drei scales a transformed element so one CSS px is distanceFactor/400 world units.
-            distanceFactor={400 / PX_PER_M}
+            distanceFactor={400 / pxPerMetre}
             position-z={0.002}
             zIndexRange={[10, 0]}
         >
@@ -109,14 +109,14 @@ function ScreenPage({
                         <span className="size-2.5 rounded-full bg-[#ff5f57]" />
                         <span className="size-2.5 rounded-full bg-[#febc2e]" />
                         <span className="size-2.5 rounded-full bg-[#28c840]" />
-                        <span className="ml-2">{title}</span>
-                        <span className="ml-auto">Esc · stand up</span>
+                        <span className="ml-2">{page.title}</span>
+                        <span className="ml-auto">Esc · {leaveLabel(seat).toLowerCase()}</span>
                     </div>
                     <div
                         className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-8 py-6"
                         style={{ zoom }}
                     >
-                        <Section id={section} />
+                        <Section id={page.section} />
                     </div>
                 </div>
             </div>
@@ -124,12 +124,24 @@ function ScreenPage({
     );
 }
 
-/** The idle picture: a terminal that has just printed who sits here. */
-function drawIdle(width: number, height: number) {
+const TONES: Record<IdleLine['tone'], { color: string; size: number }> = {
+    prompt: { color: '#7fd18b', size: 26 },
+    title: { color: '#ece8e2', size: 34 },
+    text: { color: '#ece8e2', size: 26 },
+    muted: { color: '#a39d94', size: 26 },
+};
+
+/**
+ * The idle picture: a terminal that has just printed something. Sizes are
+ * for a desk monitor (0.92 m wide) and scale with the screen, so a wall
+ * display shows the same terminal, bigger.
+ */
+function drawIdle(width: number, height: number, lines: IdleLine[]) {
     const css = getComputedStyle(document.documentElement);
     const mono = css.getPropertyValue('--font-plex-mono').trim() || 'ui-monospace, monospace';
     const cw = Math.round(width * 800);
     const ch = Math.round(height * 800);
+    let k = cw / 736; // 1 on the desk monitor
     const canvas = document.createElement('canvas');
     canvas.width = cw;
     canvas.height = ch;
@@ -141,23 +153,25 @@ function drawIdle(width: number, height: number) {
     g.fillStyle = bg;
     g.fillRect(0, 0, cw, ch);
 
-    const x = 40;
-    let y = 70;
-    const line = (text: string, color: string, size = 26) => {
-        g.font = `500 ${size}px ${mono}`;
+    // Shrink everything evenly if the longest line wouldn't fit the glass.
+    const x = 40 * k;
+    let widest = 0;
+    for (const { text, tone } of lines) {
+        g.font = `500 ${TONES[tone].size * k}px ${mono}`;
+        widest = Math.max(widest, g.measureText(text).width);
+    }
+    k *= Math.min(1, (cw - 2 * x) / widest);
+
+    let y = 70 * k;
+    for (const { text, tone } of lines) {
+        const { color, size } = TONES[tone];
+        g.font = `500 ${size * k}px ${mono}`;
         g.fillStyle = color;
         g.fillText(text, x, y);
-        y += size * 1.6;
-    };
-    const prompt = '#7fd18b';
-    line('~ $ whoami', prompt);
-    line(about.name, '#ece8e2', 34);
-    line(about.headline, '#a39d94');
-    y += 14;
-    line('~ $ cat about.md', prompt);
-    line('Take a seat to read it.', '#a39d94');
+        y += (text ? size * 1.6 : 14) * k;
+    }
     g.fillStyle = '#ece8e2';
-    g.fillRect(x, y - 24, 16, 28); // cursor
+    g.fillRect(x, y - 24 * k, 16 * k, 28 * k); // cursor
 
     const texture = new CanvasTexture(canvas);
     texture.colorSpace = SRGBColorSpace;

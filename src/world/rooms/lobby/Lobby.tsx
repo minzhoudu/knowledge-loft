@@ -11,7 +11,7 @@ import { Label } from '@/world/greybox/Label';
 import { Lamp } from '@/world/environment/Lamp';
 import { Interactable } from '@/world/interaction/Interactable';
 import { Model } from '@/world/models/Model';
-import { DeskScreen } from '@/world/seats/DeskScreen';
+import { SeatScreen } from '@/world/seats/SeatScreen';
 import { DOORS, MARKERS, ROOM, WINDOW } from './layout';
 
 const { halfWidth: X, halfDepth: Z, height: H, wall: T } = ROOM;
@@ -274,22 +274,12 @@ function WindowMullions() {
     );
 }
 
-/** Boxes that stay boxes (a wall screen, a plinth): inside the room's rigid body. */
+/** Boxes that stay boxes (the projects plinth): inside the room's rigid body. */
 function Furniture() {
     const [px, , pz] = MARKERS.plinth.position;
-    const [ex, ey, ez] = MARKERS.screen.position;
 
     return (
         <>
-            {/* wall screen: Career */}
-            <Interactable
-                id="lobby-screen"
-                label="Screen · Career"
-                action={{ kind: 'panel', panel: { kind: 'section', id: 'career' } }}
-            >
-                <Block size={[2.36, 1.38, 0.05]} position={[ex, ey, ez]} surface="accent" />
-            </Interactable>
-
             {/* plinth: Projects */}
             <Interactable
                 id="lobby-plinth"
@@ -310,6 +300,7 @@ function Furniture() {
  */
 function Models() {
     const [dx, , dz] = MARKERS.desk.position;
+    const [ex, ey, ez] = MARKERS.screen.position;
     const [sx] = MARKERS.shelf.position;
     const [fx, , fz] = MARKERS.sofa.position;
     const [tx, , tz] = MARKERS.coffeeTable.position;
@@ -325,7 +316,7 @@ function Models() {
             >
                 <Model name="desk" position={[dx, 0, dz]} />
                 <Block size={[0.96, 0.56, 0.03]} position={[dx, 1.2, dz - 0.2]} surface="metal" />
-                <DeskScreen seat="lobby-desk" />
+                <SeatScreen seat="lobby-desk" />
                 <Block size={[0.24, 0.02, 0.18]} position={[dx, 0.8, dz - 0.2]} surface="metal" />
                 <Block size={[0.04, 0.12, 0.04]} position={[dx, 0.87, dz - 0.22]} surface="metal" />
                 <Model
@@ -342,6 +333,17 @@ function Models() {
                 />
             </Interactable>
             <Model name="armchair" position={[dx, 0, dz + 0.95]} rotationY={Math.PI} />
+
+            {/* wall display: Career. Using it steps you up to read it on the screen.
+                No collider: it hangs flat on the wall. */}
+            <Interactable
+                id="lobby-screen"
+                label="Screen · Career"
+                action={{ kind: 'sit', seat: 'lobby-career' }}
+            >
+                <Block size={[2.36, 1.38, 0.05]} position={[ex, ey, ez]} surface="metal" />
+                <SeatScreen seat="lobby-career" />
+            </Interactable>
 
             {/* steel-frame bookshelf against the brick: Hobbies */}
             <Interactable

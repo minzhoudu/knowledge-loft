@@ -12,6 +12,7 @@ import {
     resumeFromKey,
     toggleFullscreen,
 } from '@/world/player/input';
+import { leaveLabel, SEATS, seatVerb } from '@/world/seats/seats';
 import { Clock, EnvironmentControls, useWeatherFeed } from './Clock';
 import { useGithubFeed } from './github';
 import { Joystick } from './Joystick';
@@ -36,6 +37,7 @@ export function Hud() {
     const focused = useWorld((s) => s.focused);
     const openPanel = useWorld((s) => s.openPanel);
     const seatPhase = useWorld((s) => s.seatPhase);
+    const seat = useWorld((s) => s.seat);
     // Only re-render for the focused door's state, not every door in the world.
     const focusedDoorOpen = useWorld((s) =>
         s.focused?.action.kind === 'door' ? !!s.doors[s.focused.action.door] : false,
@@ -243,7 +245,7 @@ export function Hud() {
                 </div>
             )}
 
-            {mode === 'seated' && seatPhase !== 'leaving' && (
+            {mode === 'seated' && seat && seatPhase !== 'leaving' && (
                 <button
                     type="button"
                     onClick={() => useWorld.getState().standUp()}
@@ -254,7 +256,7 @@ export function Hud() {
                             Esc
                         </kbd>
                     )}
-                    Stand up
+                    {leaveLabel(SEATS[seat])}
                 </button>
             )}
 
@@ -292,7 +294,7 @@ export function Hud() {
 
 function actionVerb(target: FocusTarget, doorOpen: boolean) {
     if (target.action.kind === 'door') return doorOpen ? 'Close' : 'Open';
-    if (target.action.kind === 'sit') return 'Sit down';
+    if (target.action.kind === 'sit') return seatVerb(SEATS[target.action.seat]);
     return 'Inspect';
 }
 

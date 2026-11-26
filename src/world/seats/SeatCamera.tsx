@@ -9,7 +9,7 @@ import { SEATS, seatedPose } from './seats';
 const SIT_SECONDS = 0.9;
 const STAND_SECONDS = 0.65;
 /** Sitting down dips the view a little mid-glide, like lowering yourself into a chair. */
-const DIP = 0.07;
+const SIT_DIP = 0.07;
 
 /**
  * Moves the camera when you sit down at a screen, and back when you get up.
@@ -77,7 +77,7 @@ export function SeatCamera() {
         rig.t = Math.min(1, rig.t + Math.min(delta, 0.05) / seconds);
         const e = smootherstep(rig.t);
         camera.position.lerpVectors(rig.fromPos, rig.toPos, e);
-        camera.position.y -= Math.sin(Math.PI * e) * DIP;
+        if (SEATS[seat].posture === 'sit') camera.position.y -= Math.sin(Math.PI * e) * SIT_DIP;
         camera.quaternion.slerpQuaternions(rig.fromQuat, rig.toQuat, e);
 
         if (rig.t < 1) return;
