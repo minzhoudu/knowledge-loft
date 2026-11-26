@@ -44,7 +44,13 @@
   --accent: #e0a56a;
 }
 
+/* The canvas handles its own touch gestures: no browser scrolling or pinch-zoom on it. */
+#world canvas {
+  touch-action: none;
+}
+
 body {
+  overscroll-behavior: none;
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);

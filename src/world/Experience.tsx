@@ -8,6 +8,7 @@ import { useWorld } from "@/store/world";
 import { Hud } from "@/ui/Hud";
 import { InteractionSystem } from "@/world/interaction/InteractionSystem";
 import { Lighting } from "@/world/Lighting";
+import { DragLook } from "@/world/player/DragLook";
 import { Player } from "@/world/player/Player";
 import { keyMap } from "@/world/player/controls";
 import { Lobby } from "@/world/rooms/lobby/Lobby";
@@ -40,6 +41,7 @@ export default function Experience() {
             </Physics>
           </Suspense>
           <InteractionSystem />
+          <DragLook />
           <PointerLockControls
             // Without a selector drei locks on *any* click on the page (even on panel
             // links). Pointing it at nothing turns that off; the HUD's Enter button

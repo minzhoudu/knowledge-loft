@@ -8,6 +8,7 @@ import { Euler, Vector3 } from "three";
 import { useWorld } from "@/store/world";
 import { MARKERS } from "@/world/rooms/lobby/layout";
 import type { Controls } from "./controls";
+import { joystick } from "./input";
 
 const WALK_SPEED = 2.2; // m/s, a relaxed walk
 const RUN_SPEED = 4.0;
@@ -50,15 +51,20 @@ export function Player() {
     const exploring = useWorld.getState().mode === "exploring";
 
     // Input direction in "camera space": -z is forward, +x is right.
+    // Keys give digital -1/0/1 per axis; the joystick adds an analog -1..1.
     tmp.move.set(
-      exploring ? Number(right) - Number(left) : 0,
+      exploring ? Number(right) - Number(left) + joystick.x : 0,
       0,
-      exploring ? Number(backward) - Number(forward) : 0,
+      exploring ? Number(backward) - Number(forward) + joystick.y : 0,
     );
-    if (tmp.move.lengthSq() > 0) {
+    const amount = tmp.move.length();
+    if (amount > 0) {
+      // Cap at 1 so diagonals (or keys + stick) aren't faster, but keep values
+      // below 1, so a half-pushed stick walks at half speed.
+      if (amount > 1) tmp.move.divideScalar(amount);
       // Rotate by the camera's yaw only, so looking down doesn't slow you down.
       tmp.yaw.set(0, camera.rotation.y, 0);
-      tmp.move.normalize().multiplyScalar(run ? RUN_SPEED : WALK_SPEED).applyEuler(tmp.yaw);
+      tmp.move.multiplyScalar(run ? RUN_SPEED : WALK_SPEED).applyEuler(tmp.yaw);
     }
 
     const v = b.linvel();
