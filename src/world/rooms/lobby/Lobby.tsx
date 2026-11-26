@@ -92,8 +92,6 @@ export function Lobby() {
                     position={[0, (H + WINDOW.y1) / 2, Z + T / 2]}
                     surface="wall"
                 />
-
-                <Furniture />
             </RigidBody>
             <Models />
 
@@ -182,7 +180,7 @@ export function Lobby() {
 
             <WindowMullions />
 
-            {/* pendant lamps that come on at dusk: over the exhibit, the desk and the lounge */}
+            {/* pendant lamps that come on at dusk: over the centrepiece spot, the desk and the lounge */}
             <SkillConstellation />
             <CurrentlyBoard position={MARKERS.currently.position} rotationY={-Math.PI / 2} />
             {PENDANTS.map(([x, y, z]) => (
@@ -200,7 +198,7 @@ export function Lobby() {
 }
 
 const PENDANTS: [number, number, number][] = [
-    [MARKERS.plinth.position[0], 3.0, MARKERS.plinth.position[2]],
+    [MARKERS.centrepiece.position[0], 3.0, MARKERS.centrepiece.position[2]],
     [MARKERS.desk.position[0], 2.5, MARKERS.desk.position[2] + 0.3],
     [MARKERS.coffeeTable.position[0], 3.0, MARKERS.coffeeTable.position[2] + 0.6],
 ];
@@ -272,25 +270,6 @@ function WindowMullions() {
                 />
             ))}
         </group>
-    );
-}
-
-/** Boxes that stay boxes (the projects plinth): inside the room's rigid body. */
-function Furniture() {
-    const [px, , pz] = MARKERS.plinth.position;
-
-    return (
-        <>
-            {/* plinth: Projects */}
-            <Interactable
-                id="lobby-plinth"
-                label="Exhibit · All projects"
-                action={{ kind: 'panel', panel: { kind: 'section', id: 'projects' } }}
-            >
-                <Block size={[0.62, 1.05, 0.62]} position={[px, 0.525, pz]} surface="accent" />
-                <Block size={[0.5, 0.5, 0.5]} position={[px, 1.33, pz]} color="#e9d2b8" />
-            </Interactable>
-        </>
     );
 }
 
