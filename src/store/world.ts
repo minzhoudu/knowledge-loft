@@ -27,7 +27,7 @@ export type Mode =
  */
 export type LookMode = 'pointer-lock' | 'drag';
 
-export type SectionId = 'about' | 'projects' | 'career' | 'hobbies';
+export type SectionId = 'about' | 'projects' | 'career' | 'hobbies' | 'skills';
 
 /**
  * What a content panel shows. A discriminated union: the `kind` field tells
@@ -38,7 +38,8 @@ export type Panel =
     | { kind: 'section'; id: SectionId }
     | { kind: 'project'; slug: string }
     | { kind: 'company'; slug: string }
-    | { kind: 'hobby'; slug: string };
+    | { kind: 'hobby'; slug: string }
+    | { kind: 'skill'; slug: string };
 
 /**
  * What happens when the player uses an interactable: open a content panel,

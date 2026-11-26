@@ -42,6 +42,26 @@ export const HobbySchema = z.object({
     summary: z.string().min(1),
 });
 
+/** Skill families: each gets its own colour and region in the constellation. */
+export const SKILL_CATEGORIES = {
+    language: 'Languages',
+    frontend: 'Frontend & mobile',
+    backend: 'Backend & APIs',
+    data: 'Data',
+    devops: 'Cloud & DevOps',
+    ai: 'AI & LLMs',
+    commerce: 'Ecommerce & integrations',
+} as const;
+export type SkillCategory = keyof typeof SKILL_CATEGORIES;
+
+export const SkillSchema = z.object({
+    /** What projects and roles list in their `skills`, e.g. "nextjs". */
+    slug: z.string().regex(/^[a-z0-9-]+$/),
+    /** How it's shown, e.g. "Next.js". */
+    name: z.string().min(1),
+    category: z.enum(Object.keys(SKILL_CATEGORIES) as [SkillCategory, ...SkillCategory[]]),
+});
+
 export const AboutSchema = z.object({
     name: z.string().min(1),
     headline: z.string().min(1),
@@ -76,3 +96,4 @@ export type Project = z.infer<typeof ProjectSchema>;
 export type Company = z.infer<typeof CompanySchema>;
 export type Hobby = z.infer<typeof HobbySchema>;
 export type About = z.infer<typeof AboutSchema>;
+export type Skill = z.infer<typeof SkillSchema>;

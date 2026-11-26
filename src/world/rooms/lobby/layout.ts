@@ -35,6 +35,8 @@ export const MARKERS = {
     shelf: { position: [1.6, 0, -4.79] as Vec3 },
     screen: { position: [-1.6, 1.85, -4.95] as Vec3 },
     sofa: { position: [2.4, 0, 3.15] as Vec3 },
+    /** The skill constellation's projector, in the open floor in front of the spawn point. */
+    constellation: { position: [2.3, 0, -1.7] as Vec3 },
     coffeeTable: { position: [2.4, 0, 1.65] as Vec3 },
     plants: [
         [6.45, 0, -4.35],

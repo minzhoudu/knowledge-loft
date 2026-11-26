@@ -225,3 +225,66 @@ export const hobbies = [
             'Survival and co-op games, played with the same group of friends. Building a base together, planning a run, and failing loudly is my favourite kind of teamwork outside work.',
     },
 ];
+
+/**
+ * Every skill that projects and roles can list. Each one becomes a star in
+ * the lobby's skill constellation; a skill no project uses yet is still
+ * shown, just small. Unknown slugs in projects or roles fail the build.
+ */
+export const skills = [
+    // Languages
+    { slug: 'typescript', name: 'TypeScript', category: 'language' },
+    { slug: 'javascript', name: 'JavaScript', category: 'language' },
+    { slug: 'python', name: 'Python', category: 'language' },
+    { slug: 'go', name: 'Go', category: 'language' },
+    { slug: 'kotlin', name: 'Kotlin', category: 'language' },
+    { slug: 'php', name: 'PHP', category: 'language' },
+    // Frontend & mobile
+    { slug: 'react', name: 'React', category: 'frontend' },
+    { slug: 'nextjs', name: 'Next.js', category: 'frontend' },
+    { slug: 'react-native', name: 'React Native', category: 'frontend' },
+    { slug: 'tailwind', name: 'Tailwind CSS', category: 'frontend' },
+    { slug: 'pwa', name: 'PWA', category: 'frontend' },
+    { slug: 'vite', name: 'Vite', category: 'frontend' },
+    { slug: 'mui', name: 'MUI', category: 'frontend' },
+    { slug: 'threejs', name: 'three.js', category: 'frontend' },
+    { slug: 'webgl', name: 'WebGL', category: 'frontend' },
+    { slug: 'web-audio', name: 'Web Audio', category: 'frontend' },
+    // Backend & APIs
+    { slug: 'nodejs', name: 'Node.js', category: 'backend' },
+    { slug: 'nestjs', name: 'NestJS', category: 'backend' },
+    { slug: 'express', name: 'Express', category: 'backend' },
+    { slug: 'graphql', name: 'GraphQL', category: 'backend' },
+    { slug: 'drizzle', name: 'Drizzle ORM', category: 'backend' },
+    { slug: 'better-auth', name: 'Better Auth', category: 'backend' },
+    // Data
+    { slug: 'postgresql', name: 'PostgreSQL', category: 'data' },
+    { slug: 'mysql', name: 'MySQL', category: 'data' },
+    { slug: 'mongodb', name: 'MongoDB', category: 'data' },
+    { slug: 'bigquery', name: 'BigQuery', category: 'data' },
+    // Cloud & DevOps
+    { slug: 'aws', name: 'AWS', category: 'devops' },
+    { slug: 'gcp', name: 'Google Cloud', category: 'devops' },
+    { slug: 'terraform', name: 'Terraform', category: 'devops' },
+    { slug: 'docker', name: 'Docker', category: 'devops' },
+    { slug: 'github-actions', name: 'GitHub Actions', category: 'devops' },
+    { slug: 'vitest', name: 'Vitest', category: 'devops' },
+    { slug: 'vercel', name: 'Vercel', category: 'devops' },
+    { slug: 'neon', name: 'Neon', category: 'devops' },
+    { slug: 'netlify', name: 'Netlify', category: 'devops' },
+    { slug: 'serverless', name: 'Serverless functions', category: 'devops' },
+    // AI & LLMs
+    { slug: 'llm', name: 'LLM integration', category: 'ai' },
+    { slug: 'rag', name: 'RAG', category: 'ai' },
+    { slug: 'bedrock', name: 'AWS Bedrock', category: 'ai' },
+    { slug: 'langchain', name: 'LangChain', category: 'ai' },
+    { slug: 'pinecone', name: 'Pinecone', category: 'ai' },
+    { slug: 'clarifai', name: 'Clarifai', category: 'ai' },
+    { slug: 'agentic-coding', name: 'Agentic coding', category: 'ai' },
+    // Ecommerce & integrations
+    { slug: 'salesforce-commerce-cloud', name: 'Salesforce Commerce Cloud', category: 'commerce' },
+    { slug: 'magento', name: 'Magento 2', category: 'commerce' },
+    { slug: 'adyen', name: 'Adyen', category: 'commerce' },
+    { slug: 'stripe', name: 'Stripe', category: 'commerce' },
+    { slug: 'google-maps', name: 'Google Maps', category: 'commerce' },
+] as const;

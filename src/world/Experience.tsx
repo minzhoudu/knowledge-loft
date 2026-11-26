@@ -38,11 +38,11 @@ export default function Experience() {
                 shadows="percentage" // PCF shadow filtering; three r187 dropped the old "soft" PCF variant
                 flat // no tone mapping here: PostEffects does it, once, at the end
                 gl={{ antialias: false }} // anti-aliasing happens in PostEffects (SMAA)
-                onCreated={({ gl, scene }) => {
+                onCreated={({ gl, scene, camera }) => {
                     // Like a camera's exposure: AgX tone mapping (PostEffects) reads it.
                     gl.toneMappingExposure = EXPOSURE;
                     if (process.env.NODE_ENV === 'development') {
-                        Object.assign(window, { __gl: gl, __scene: scene }); // poke at them from the console
+                        Object.assign(window, { __gl: gl, __scene: scene, __camera: camera }); // poke at them from the console
                     }
                 }}
                 dpr={[1, 1.5]} // cap pixel ratio: 2x/3x screens would otherwise render 4-9x the pixels

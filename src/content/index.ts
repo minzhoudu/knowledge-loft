@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import * as raw from './data';
-import { AboutSchema, CompanySchema, HobbySchema, ProjectSchema } from './schema';
+import { AboutSchema, CompanySchema, HobbySchema, ProjectSchema, SkillSchema } from './schema';
 
 /** Validated content. Import from here, never from ./data directly. */
 export const about = AboutSchema.parse(raw.about);
@@ -13,8 +13,34 @@ export const companies = z
     .parse(raw.companies)
     .sort((a, b) => b.start.localeCompare(a.start));
 export const hobbies = z.array(HobbySchema).parse(raw.hobbies);
+export const skills = z.array(SkillSchema).parse(raw.skills);
 
-export type { About, Company, Hobby, Project } from './schema';
+// Every skill a project or role lists must be in the catalogue: a typo like
+// "nextj" would otherwise quietly become a separate, lonely star.
+const known = new Set(skills.map((s) => s.slug));
+const unknown = [...projects, ...companies].flatMap((x) =>
+    x.skills.filter((s) => !known.has(s)).map((s) => `"${s}" (in ${x.slug})`),
+);
+if (unknown.length > 0) {
+    throw new Error(`Unknown skills; add them to "skills" in data.ts: ${unknown.join(', ')}`);
+}
+
+const skillBySlug = new Map(skills.map((s) => [s.slug, s]));
+/** Display name for a skill slug, e.g. "nextjs" -> "Next.js". */
+export function skillName(slug: string) {
+    return skillBySlug.get(slug)?.name ?? slug;
+}
+
+/** The projects and roles that list a skill. */
+export function skillUsage(slug: string) {
+    return {
+        projects: projects.filter((p) => p.skills.includes(slug)),
+        companies: companies.filter((c) => c.skills.includes(slug)),
+    };
+}
+
+export type { About, Company, Hobby, Project, Skill, SkillCategory } from './schema';
+export { SKILL_CATEGORIES } from './schema';
 
 export function formatRange(start: string, end: string | null) {
     const fmt = (ym: string) => {

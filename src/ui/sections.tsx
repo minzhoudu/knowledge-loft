@@ -1,4 +1,15 @@
-import { about, companies, formatRange, hobbies, projects } from '@/content';
+import {
+    about,
+    companies,
+    formatRange,
+    hobbies,
+    projects,
+    SKILL_CATEGORIES,
+    skillName,
+    skills,
+    skillUsage,
+    type SkillCategory,
+} from '@/content';
 import type { Panel, SectionId } from '@/store/world';
 
 /**
@@ -11,6 +22,7 @@ export const SECTION_TITLES: Record<SectionId, string> = {
     projects: 'Projects',
     career: 'Career',
     hobbies: 'Hobbies',
+    skills: 'Skills',
 };
 
 export function panelTitle(panel: Panel) {
@@ -23,6 +35,8 @@ export function panelTitle(panel: Panel) {
             return companies.find((c) => c.slug === panel.slug)?.name ?? 'Company';
         case 'hobby':
             return hobbies.find((h) => h.slug === panel.slug)?.name ?? 'Hobby';
+        case 'skill':
+            return skillName(panel.slug);
     }
 }
 
@@ -36,7 +50,57 @@ export function PanelBody({ panel }: { panel: Panel }) {
             return <CompanyDetail slug={panel.slug} />;
         case 'hobby':
             return <HobbyDetail slug={panel.slug} />;
+        case 'skill':
+            return <SkillDetail slug={panel.slug} />;
     }
+}
+
+function SkillDetail({ slug }: { slug: string }) {
+    const skill = skills.find((s) => s.slug === slug);
+    if (!skill) return <p className="text-muted">This skill no longer exists.</p>;
+    const { projects: inProjects, companies: inRoles } = skillUsage(slug);
+    return (
+        <div className="flex flex-col gap-4">
+            <p className="text-sm text-muted">{SKILL_CATEGORIES[skill.category]}</p>
+            {inRoles.length > 0 && (
+                <div className="flex flex-col gap-2">
+                    <p className="font-mono text-xs uppercase tracking-widest text-muted">
+                        At work
+                    </p>
+                    <ul className="flex flex-col gap-1">
+                        {inRoles.map((c) => (
+                            <li key={c.slug}>
+                                {c.role} · {c.name}{' '}
+                                <span className="text-sm text-muted tabular-nums">
+                                    {formatRange(c.start, c.end)}
+                                </span>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+            {inProjects.length > 0 && (
+                <div className="flex flex-col gap-2">
+                    <p className="font-mono text-xs uppercase tracking-widest text-muted">
+                        In projects
+                    </p>
+                    <ul className="flex flex-col gap-1">
+                        {inProjects.map((p) => (
+                            <li key={p.slug}>
+                                {p.title}{' '}
+                                <span className="text-sm text-muted tabular-nums">· {p.year}</span>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+            {inRoles.length === 0 && inProjects.length === 0 && (
+                <p className="leading-relaxed text-muted">
+                    Part of the toolkit, not yet tied to a project shown here.
+                </p>
+            )}
+        </div>
+    );
 }
 
 function HobbyDetail({ slug }: { slug: string }) {
@@ -84,6 +148,8 @@ export function Section({ id }: { id: SectionId }) {
             return <CareerSection />;
         case 'hobbies':
             return <HobbiesSection />;
+        case 'skills':
+            return <SkillsSection />;
     }
 }
 
@@ -149,6 +215,22 @@ function HobbiesSection() {
     );
 }
 
+function SkillsSection() {
+    const groups = Object.keys(SKILL_CATEGORIES) as SkillCategory[];
+    return (
+        <div className="flex flex-col gap-4">
+            {groups.map((category) => (
+                <div key={category} className="flex flex-col gap-2">
+                    <p className="font-semibold">{SKILL_CATEGORIES[category]}</p>
+                    <Tags
+                        items={skills.filter((s) => s.category === category).map((s) => s.slug)}
+                    />
+                </div>
+            ))}
+        </div>
+    );
+}
+
 function Tags({ items }: { items: string[] }) {
     return (
         <ul className="flex flex-wrap gap-1.5">
@@ -157,7 +239,7 @@ function Tags({ items }: { items: string[] }) {
                     key={s}
                     className="rounded-full border border-line px-2 py-0.5 font-mono text-xs text-muted"
                 >
-                    {s}
+                    {skillName(s)}
                 </li>
             ))}
         </ul>

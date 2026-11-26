@@ -2,6 +2,7 @@
 
 import { CuboidCollider, RigidBody } from '@react-three/rapier';
 import { DoubleSide } from 'three';
+import { SkillConstellation } from '@/world/constellation/SkillConstellation';
 import { Block } from '@/world/greybox/Block';
 import type { Surface } from '@/world/materials/surfaces';
 import { Door } from '@/world/greybox/Door';
@@ -177,6 +178,7 @@ export function Lobby() {
             <WindowMullions />
 
             {/* pendant lamps that come on at dusk: over the exhibit, the desk and the lounge */}
+            <SkillConstellation />
             {PENDANTS.map(([x, y, z]) => (
                 <group key={`${x},${z}`}>
                     <Block
