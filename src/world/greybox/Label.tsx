@@ -103,9 +103,16 @@ function drawLabel(title: string, subtitle: string | undefined, tone: 'dark' | '
     g.fillText(title, pad, subtitle ? pxH * 0.4 : pxH / 2, maxW);
 
     if (subtitle) {
-        g.font = `500 52px ${mono}`;
+        // Same for the subtitle (long job titles), before fillText's maxWidth squashes it.
+        const text = subtitle.toUpperCase();
+        let sub = 52;
+        g.font = `500 ${sub}px ${mono}`;
+        while (g.measureText(text).width > maxW && sub > 30) {
+            sub -= 2;
+            g.font = `500 ${sub}px ${mono}`;
+        }
         g.fillStyle = muted;
-        g.fillText(subtitle.toUpperCase(), pad, pxH * 0.76, maxW);
+        g.fillText(text, pad, pxH * 0.76, maxW);
     }
 
     const texture = new CanvasTexture(canvas);
