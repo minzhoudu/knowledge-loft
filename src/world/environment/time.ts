@@ -108,4 +108,6 @@ export const environment = {
     cloud: 0,
     rain: 0,
     snow: 0,
+    /** Season currently shown (live or previewed). */
+    season: 'winter' as Season,
 };

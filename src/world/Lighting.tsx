@@ -144,6 +144,7 @@ export function Lighting() {
             environment.rain = ease(environment.rain, look.rain, WEATHER_EASE, delta);
             environment.snow = ease(environment.snow, look.snow, WEATHER_EASE, delta);
         }
+        environment.season = season;
         const { cloud, rain, snow } = environment;
 
         // 2. The sun for this place, date and time.

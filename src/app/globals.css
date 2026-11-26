@@ -44,6 +44,16 @@
     --accent: #e0a56a;
 }
 
+/* Resume button: fills while the browser's re-lock cooldown runs out. */
+@keyframes relock {
+    from {
+        transform: scaleX(0);
+    }
+    to {
+        transform: scaleX(1);
+    }
+}
+
 /* The canvas handles its own touch gestures: no browser scrolling or pinch-zoom on it. */
 #world canvas {
     touch-action: none;

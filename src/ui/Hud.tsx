@@ -3,7 +3,15 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { performAction, useWorld, type FocusTarget } from '@/store/world';
-import { enterWorld, isTouchDevice } from '@/world/player/input';
+import {
+    enterWorld,
+    isTouchDevice,
+    keepWalking,
+    pointerLock,
+    releaseMouse,
+    resumeFromKey,
+    toggleFullscreen,
+} from '@/world/player/input';
 import { Clock, EnvironmentControls, useWeatherFeed } from './Clock';
 import { Joystick } from './Joystick';
 import { PanelBody, panelTitle } from './sections';
@@ -22,6 +30,8 @@ export function Hud() {
     const mode = useWorld((s) => s.mode);
     const touch = useWorld((s) => s.touch);
     const lockFailed = useWorld((s) => s.lockFailed);
+    const relocking = useWorld((s) => s.relocking);
+    const relockOnClick = useWorld((s) => s.relockOnClick);
     const focused = useWorld((s) => s.focused);
     const openPanel = useWorld((s) => s.openPanel);
     // Only re-render for the focused door's state, not every door in the world.
@@ -34,19 +44,57 @@ export function Hud() {
     const [touchDevice] = useState(isTouchDevice);
 
     useEffect(() => {
+        // Esc resumes in two steps: walking starts when the key goes down, and
+        // the mouse is captured when it comes back up. Capturing on the way down
+        // loses a race: the browser handles Esc itself right after the page does,
+        // sees a captured mouse and releases it again, which reads as a fresh
+        // "visitor pressed Esc" and pauses. On the way up, the browser is done.
+        let captureOnEscUp = false;
+
         function onKey(e: KeyboardEvent) {
             const s = useWorld.getState();
+            const esc = e.code === 'Escape' && !e.repeat; // holding Esc mustn't toggle the pause over and over
             if (e.code === 'KeyE' && s.mode === 'exploring' && s.focused) {
                 performAction(s.focused.action);
-            } else if (e.code === 'Escape' && s.mode === 'reading') {
+            } else if (e.code === 'KeyM' && !e.repeat) {
+                s.toggleMuted();
+            } else if (esc && s.mode === 'reading') {
                 s.close();
-            } else if (e.code === 'Escape' && s.mode === 'exploring' && s.look === 'drag') {
+                keepWalking();
+                captureOnEscUp = true;
+            } else if (esc && s.mode === 'paused' && !s.relocking) {
+                // Esc toggles the pause. (`relocking` skips the very Esc press that
+                // released the mouse, in case the browser passes it on to the page.)
+                keepWalking();
+                captureOnEscUp = true;
+            } else if (
+                esc &&
+                s.mode === 'exploring' &&
+                pointerLock.escCaptured &&
+                document.pointerLockElement
+            ) {
+                // Full screen with Esc captured: the browser left the mouse alone, so
+                // pausing is up to us. Releasing it ourselves lets Esc resume later.
+                releaseMouse();
+                s.setMode('paused');
+            } else if (e.code === 'KeyF' && !e.repeat) {
+                toggleFullscreen();
+            } else if (esc && s.mode === 'exploring' && s.look === 'drag') {
                 // Pointer lock releases on Esc by itself; drag mode needs to be told.
                 s.setMode('paused');
             }
         }
+        function onKeyUp(e: KeyboardEvent) {
+            if (e.code !== 'Escape' || !captureOnEscUp) return;
+            captureOnEscUp = false;
+            if (useWorld.getState().mode === 'exploring') resumeFromKey();
+        }
         window.addEventListener('keydown', onKey);
-        return () => window.removeEventListener('keydown', onKey);
+        window.addEventListener('keyup', onKeyUp);
+        return () => {
+            window.removeEventListener('keydown', onKey);
+            window.removeEventListener('keyup', onKeyUp);
+        };
     }, []);
 
     return (
@@ -58,6 +106,12 @@ export function Hud() {
                         className="pointer-events-none fixed left-1/2 top-1/2 size-1.5 -translate-1/2 rounded-full bg-white/90 shadow-[0_0_0_1px_rgba(0,0,0,0.35)]"
                     />
                     <Clock className="pointer-events-none fixed left-[max(16px,env(safe-area-inset-left,0px))] top-[calc(env(safe-area-inset-top,0px)+20px)] rounded-full bg-panel px-3 py-1.5 text-fg backdrop-blur" />
+
+                    {relockOnClick && !touch && (
+                        <p className="pointer-events-none fixed bottom-[calc(env(safe-area-inset-bottom,0px)+24px)] left-1/2 -translate-x-1/2 rounded-full bg-panel px-3 py-1.5 text-xs text-muted backdrop-blur">
+                            Drag to look · click to use the mouse freely
+                        </p>
+                    )}
 
                     {focused && !touch && (
                         <div className="pointer-events-none fixed left-1/2 top-[58%] -translate-x-1/2 rounded-lg bg-panel px-3 py-2 text-sm text-fg backdrop-blur">
@@ -123,16 +177,36 @@ export function Hud() {
                                     <Key>E</Key> inspect the warm-coloured objects
                                 </li>
                                 <li>
-                                    <Key>Esc</Key> pause
+                                    <Key>M</Key> sound on/off
+                                </li>
+                                <li>
+                                    <Key>Esc</Key> pause, or close what you opened
+                                </li>
+                                <li>
+                                    <Key>F</Key> full screen
                                 </li>
                             </ul>
                         )}
                         <button
                             type="button"
+                            // Disabled for the second after Esc, while the browser won't
+                            // capture the mouse again; the bar fills as it becomes ready.
+                            disabled={relocking}
                             onClick={mode === 'intro' ? () => enterWorld() : resume}
-                            className="rounded-lg bg-accent px-4 py-2.5 font-semibold text-black transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                            className="relative overflow-hidden rounded-lg bg-accent px-4 py-2.5 font-semibold text-black transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-60"
                         >
                             {mode === 'intro' ? 'Enter' : 'Resume'}
+                            {mode === 'paused' && !touchDevice && (
+                                <span className="ml-2 font-mono text-xs font-normal opacity-70">
+                                    or Esc
+                                </span>
+                            )}
+                            {relocking && (
+                                <span
+                                    aria-hidden
+                                    className="absolute inset-x-0 bottom-0 h-0.5 origin-left animate-[relock_1.2s_linear_forwards] bg-black/50"
+                                />
+                            )}
                         </button>
                         <EnvironmentControls />
                         {lockFailed && (

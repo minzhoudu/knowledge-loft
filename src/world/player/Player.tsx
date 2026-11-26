@@ -1,13 +1,12 @@
 'use client';
 
-import { useKeyboardControls } from '@react-three/drei';
 import { useFrame, useThree } from '@react-three/fiber';
 import { CapsuleCollider, RigidBody, type RapierRigidBody } from '@react-three/rapier';
 import { useEffect, useMemo, useRef } from 'react';
 import { Euler, Vector3 } from 'three';
 import { useWorld } from '@/store/world';
 import { MARKERS } from '@/world/rooms/lobby/layout';
-import type { Controls } from './controls';
+import { held, useKeyboard } from './controls';
 import { joystick } from './input';
 
 const WALK_SPEED = 2.2; // m/s, a relaxed walk
@@ -27,7 +26,7 @@ const EYE_OFFSET = 0.85; // body centre sits 0.8 m up, so eyes end up at ~1.65 m
  */
 export function Player() {
     const body = useRef<RapierRigidBody>(null);
-    const [, getKeys] = useKeyboardControls<Controls>();
+    useKeyboard();
     // `get` reads R3F's state without subscribing. three.js objects are mutated
     // in place by design, so we reach them through get()/the frame state rather
     // than through a hook's return value (which React's lint rules treat as frozen).
@@ -47,7 +46,11 @@ export function Player() {
         const b = body.current;
         if (!b) return;
 
-        const { forward, backward, left, right, run } = getKeys();
+        const forward = held('forward');
+        const backward = held('backward');
+        const left = held('left');
+        const right = held('right');
+        const run = held('run');
         const exploring = useWorld.getState().mode === 'exploring';
 
         // Input direction in "camera space": -z is forward, +x is right.

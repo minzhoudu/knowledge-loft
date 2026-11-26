@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { releaseMouse } from '@/world/player/input';
 import type { LightingMode, SeasonMode } from '@/world/environment/time';
 import type { LiveWeather, WeatherMode } from '@/world/environment/weather';
 
@@ -56,6 +57,15 @@ type WorldState = {
     touch: boolean;
     /** The browser refused pointer lock on the last attempt. */
     lockFailed: boolean;
+    /** Just released the pointer lock; the browser won't allow a new one for about a second. */
+    relocking: boolean;
+    /** Pointer lock has worked on this page at least once (so it's available here). */
+    canLock: boolean;
+    /**
+     * Looking by drag only for now: the next click on the world captures the
+     * mouse again. Set when Esc resumes play, since Esc can't capture it.
+     */
+    relockOnClick: boolean;
     focused: FocusTarget | null;
     openPanel: Panel | null;
     /** Door id -> open? Doors not listed are closed. */
@@ -72,8 +82,18 @@ type WorldState = {
     /** Latest live weather from /api/weather (null until loaded, or if unavailable). */
     liveWeather: LiveWeather | null;
     setLiveWeather: (w: LiveWeather | null) => void;
+    /** Sound off. Remembered in this browser between visits. */
+    muted: boolean;
+    toggleMuted: () => void;
     setMode: (mode: Mode) => void;
-    set: (partial: Partial<Pick<WorldState, 'look' | 'touch' | 'lockFailed' | 'mode'>>) => void;
+    set: (
+        partial: Partial<
+            Pick<
+                WorldState,
+                'look' | 'touch' | 'lockFailed' | 'relocking' | 'canLock' | 'relockOnClick' | 'mode'
+            >
+        >,
+    ) => void;
     setFocused: (focused: FocusTarget | null) => void;
     open: (panel: Panel) => void;
     close: () => void;
@@ -85,6 +105,9 @@ export const useWorld = create<WorldState>((set) => ({
     look: 'pointer-lock',
     touch: false,
     lockFailed: false,
+    relocking: false,
+    canLock: false,
+    relockOnClick: false,
     focused: null,
     openPanel: null,
     doors: {},
@@ -96,6 +119,12 @@ export const useWorld = create<WorldState>((set) => ({
     setWeather: (weather) => set({ weather }),
     liveWeather: null,
     setLiveWeather: (liveWeather) => set({ liveWeather }),
+    muted: readMuted(),
+    toggleMuted: () =>
+        set((s) => {
+            writeMuted(!s.muted);
+            return { muted: !s.muted };
+        }),
     setMode: (mode) => set({ mode }),
     set: (partial) => set(partial),
     setFocused: (focused) => set({ focused }),
@@ -103,6 +132,22 @@ export const useWorld = create<WorldState>((set) => ({
     close: () => set({ openPanel: null, mode: 'paused' }),
     toggleDoor: (door) => set((s) => ({ doors: { ...s.doors, [door]: !s.doors[door] } })),
 }));
+
+// localStorage can be missing or throw (private windows, blocked storage):
+// then sound is simply on each visit.
+const MUTED_KEY = 'knowledge-loft:muted';
+function readMuted() {
+    try {
+        return typeof window !== 'undefined' && localStorage.getItem(MUTED_KEY) === '1';
+    } catch {
+        return false;
+    }
+}
+function writeMuted(muted: boolean) {
+    try {
+        localStorage.setItem(MUTED_KEY, muted ? '1' : '0');
+    } catch {}
+}
 
 /**
  * Run an interactable's action. Opening a panel releases the mouse so the
@@ -114,7 +159,9 @@ export function performAction(action: Action) {
         s.toggleDoor(action.door);
     } else {
         s.open(action.panel);
-        if (document.pointerLockElement) document.exitPointerLock();
+        // Released by us, not by Esc, so closing the panel can capture the mouse
+        // again without a click.
+        releaseMouse();
     }
 }
 

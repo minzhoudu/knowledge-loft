@@ -107,6 +107,10 @@ const SEASON: { value: SeasonMode; label: string }[] = [
     { value: 'autumn', label: 'Autumn' },
     { value: 'winter', label: 'Winter' },
 ];
+const SOUND: { value: 'on' | 'off'; label: string }[] = [
+    { value: 'on', label: 'On' },
+    { value: 'off', label: 'Off' },
+];
 const WEATHER: { value: WeatherMode; label: string }[] = [
     { value: 'live', label: 'Live' },
     { value: 'clear', label: 'Clear' },
@@ -126,6 +130,14 @@ export function EnvironmentControls() {
                 value={s.weather}
                 options={WEATHER}
                 onChange={s.setWeather}
+            />
+            <Segmented
+                label="Sound"
+                value={s.muted ? 'off' : 'on'}
+                options={SOUND}
+                onChange={(v) => {
+                    if ((v === 'off') !== s.muted) s.toggleMuted();
+                }}
             />
         </div>
     );
