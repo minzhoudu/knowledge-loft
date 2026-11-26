@@ -5,6 +5,7 @@ import { companies } from '@/content';
 import { Block } from '@/world/greybox/Block';
 import { Label } from '@/world/greybox/Label';
 import { Interactable } from '@/world/interaction/Interactable';
+import { Model } from '@/world/models/Model';
 import { DOOR, layoutStations, roomFor, type Station } from './layout';
 
 // Content is static, so the room's shape and stations are computed once.
@@ -89,6 +90,23 @@ export function CareerRoom() {
                 width={2.4}
                 position={[CX, 2.6, z0 + 0.01]}
             />
+            {/* a clock above the sign at the far end: it's what you hear ticking */}
+            <Model name="clock" position={[CX, 3.12, z0 + 0.04]} scale={1.6} collider={false} />
+            {/* bulkhead lamps on the wall opposite each station */}
+            {STATIONS.map(({ company, position: [, , z], side }) => {
+                const east = side === 'west';
+                return (
+                    <Model
+                        key={company.slug}
+                        name="wall-lamp"
+                        position={[east ? x1 - 0.07 : x0 + 0.07, 1.9, z]}
+                        rotationY={east ? -Math.PI / 2 : Math.PI / 2}
+                        collider={false}
+                    />
+                );
+            })}
+            <Model name="plant-tall" position={[x0 + 0.45, 0, z0 + 0.45]} />
+            <Model name="plant-pot" position={[x1 - 0.45, 0, z0 + 0.45]} />
             <Label
                 title="Lobby"
                 width={1.1}

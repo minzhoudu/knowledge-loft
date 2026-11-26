@@ -10,6 +10,7 @@ import { Door } from '@/world/greybox/Door';
 import { Label } from '@/world/greybox/Label';
 import { Lamp } from '@/world/environment/Lamp';
 import { Interactable } from '@/world/interaction/Interactable';
+import { Model } from '@/world/models/Model';
 import { DOORS, MARKERS, ROOM, WINDOW } from './layout';
 
 const { halfWidth: X, halfDepth: Z, height: H, wall: T } = ROOM;
@@ -92,6 +93,7 @@ export function Lobby() {
 
                 <Furniture />
             </RigidBody>
+            <Models />
 
             {/* invisible blocker for the window */}
             <CuboidCollider
@@ -271,47 +273,13 @@ function WindowMullions() {
     );
 }
 
+/** Boxes that stay boxes (a wall screen, a plinth): inside the room's rigid body. */
 function Furniture() {
-    const [dx, , dz] = MARKERS.desk.position;
-    const [sx, , sz] = MARKERS.shelf.position;
     const [px, , pz] = MARKERS.plinth.position;
     const [ex, ey, ez] = MARKERS.screen.position;
-    const [fx, , fz] = MARKERS.sofa.position;
-    const [tx, , tz] = MARKERS.coffeeTable.position;
 
     return (
         <>
-            {/* desk corner: About me */}
-            <Interactable
-                id="lobby-desk"
-                label="Desk · About me"
-                action={{ kind: 'panel', panel: { kind: 'section', id: 'about' } }}
-            >
-                <Block size={[1.9, 0.04, 0.8]} position={[dx, 0.74, dz]} surface="accent" />
-                <Block size={[0.04, 0.72, 0.7]} position={[dx - 0.85, 0.36, dz]} surface="accent" />
-                <Block size={[0.04, 0.72, 0.7]} position={[dx + 0.85, 0.36, dz]} surface="accent" />
-                <Block size={[0.96, 0.56, 0.03]} position={[dx, 1.15, dz - 0.17]} surface="metal" />
-            </Interactable>
-            <Block size={[0.5, 0.9, 0.5]} position={[dx, 0.45, dz + 0.75]} />
-
-            {/* bookshelf: Hobbies */}
-            <Interactable
-                id="lobby-shelf"
-                label="Bookshelf · Hobbies"
-                action={{ kind: 'panel', panel: { kind: 'section', id: 'hobbies' } }}
-            >
-                <Block size={[0.03, 2.5, 0.38]} position={[sx - 1.2, 1.25, sz]} surface="accent" />
-                <Block size={[0.03, 2.5, 0.38]} position={[sx + 1.2, 1.25, sz]} surface="accent" />
-                {[0.12, 0.62, 1.12, 1.62, 2.12].map((y) => (
-                    <Block
-                        key={y}
-                        size={[2.4, 0.03, 0.38]}
-                        position={[sx, y, sz]}
-                        surface="accent"
-                    />
-                ))}
-            </Interactable>
-
             {/* wall screen: Career */}
             <Interactable
                 id="lobby-screen"
@@ -330,20 +298,89 @@ function Furniture() {
                 <Block size={[0.62, 1.05, 0.62]} position={[px, 0.525, pz]} surface="accent" />
                 <Block size={[0.5, 0.5, 0.5]} position={[px, 1.33, pz]} color="#e9d2b8" />
             </Interactable>
+        </>
+    );
+}
 
-            {/* lounge */}
-            <Block size={[2.6, 0.45, 0.95]} position={[fx, 0.225, fz]} />
-            <Block size={[2.6, 0.5, 0.22]} position={[fx, 0.7, fz + 0.37]} />
-            <Block size={[1.2, 0.45, 0.65]} position={[tx, 0.225, tz]} />
+/**
+ * Real furniture (models from public/models). Each brings its own collider,
+ * so it lives outside the room's rigid body: that one generates colliders
+ * from its meshes once, when it mounts, before any model has loaded.
+ */
+function Models() {
+    const [dx, , dz] = MARKERS.desk.position;
+    const [sx] = MARKERS.shelf.position;
+    const [fx, , fz] = MARKERS.sofa.position;
+    const [tx, , tz] = MARKERS.coffeeTable.position;
 
-            {MARKERS.plants.map(([x, , z]) => (
-                <Block
-                    key={`${x},${z}`}
-                    size={[0.5, 1.4, 0.5]}
-                    position={[x, 0.7, z]}
-                    surface="plant"
+    return (
+        <>
+            {/* desk corner: About me. A steel office desk, the chair pulled up to it. */}
+            <Interactable
+                id="lobby-desk"
+                label="Desk · About me"
+                action={{ kind: 'panel', panel: { kind: 'section', id: 'about' } }}
+            >
+                <Model name="desk" position={[dx, 0, dz]} />
+                <Block size={[0.96, 0.56, 0.03]} position={[dx, 1.2, dz - 0.2]} surface="metal" />
+                <Block size={[0.24, 0.02, 0.18]} position={[dx, 0.8, dz - 0.2]} surface="metal" />
+                <Block size={[0.04, 0.12, 0.04]} position={[dx, 0.87, dz - 0.22]} surface="metal" />
+                <Model
+                    name="desk-lamp"
+                    position={[dx + 0.75, 0.79, dz - 0.15]}
+                    rotationY={-2.4}
+                    collider={false}
                 />
+                <Model
+                    name="plant-pot"
+                    position={[dx - 0.8, 0.79, dz - 0.2]}
+                    scale={0.4}
+                    collider={false}
+                />
+            </Interactable>
+            <Model name="armchair" position={[dx, 0, dz + 0.95]} rotationY={Math.PI} />
+
+            {/* steel-frame bookshelf against the brick: Hobbies */}
+            <Interactable
+                id="lobby-shelf"
+                label="Bookshelf · Hobbies"
+                action={{ kind: 'panel', panel: { kind: 'section', id: 'hobbies' } }}
+            >
+                <Model name="steel-shelves" position={[sx, 0, -Z + 0.38]} />
+                {SHELF_BOOKS.map(([x, y], i) => (
+                    <Model key={i} name="books" position={[sx + x, y, -Z + 0.3]} collider={false} />
+                ))}
+                <Model name="vase" position={[sx - 0.75, SHELF_TOP, -Z + 0.36]} collider={false} />
+            </Interactable>
+
+            {/* lounge by the window: a chesterfield facing the room, a lounge chair, a low table */}
+            <Model name="sofa" position={[fx, 0, fz]} rotationY={Math.PI} />
+            <Model
+                name="pillows"
+                position={[fx, 0.32, fz + 0.1]}
+                rotationY={Math.PI}
+                collider={false}
+            />
+            <Model name="coffee-table" position={[tx, 0, tz]} rotationY={Math.PI / 2} />
+            <Model name="lounge-chair" position={[tx + 2.0, 0, tz + 0.5]} rotationY={-2.0} />
+
+            {MARKERS.plants.map(([x, , z], i) => (
+                <Model key={`${x},${z}`} name={PLANTS[i % PLANTS.length]} position={[x, 0, z]} />
             ))}
         </>
     );
 }
+
+const PLANTS = ['monstera', 'plant-pot', 'plant-tall'] as const;
+
+/**
+ * Book sets on the steel shelves: [x offset from the shelf's centre, board height].
+ * Board heights read from the model's geometry (vertex heights cluster at each board).
+ */
+const SHELF_TOP = 2.32;
+const SHELF_BOOKS: [number, number][] = [
+    [-0.5, 0.67],
+    [0.5, 1.09],
+    [-0.45, 1.75],
+    [0.55, 1.75],
+];

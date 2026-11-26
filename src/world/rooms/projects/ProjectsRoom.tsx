@@ -6,10 +6,12 @@ import { Block } from '@/world/greybox/Block';
 import { Label } from '@/world/greybox/Label';
 import { GithubWall } from '@/world/github/GithubWall';
 import { Interactable } from '@/world/interaction/Interactable';
+import { Model } from '@/world/models/Model';
 import { CENTER, DOOR, layoutExhibits, ROOM, type ExhibitSlot } from './layout';
 
 const { x0, x1, z0, z1, height: H, wall: T } = ROOM;
 const PLAQUE_Z = -0.86; // exhibit-local z of the wall panel (the wall is at -0.9)
+const PENDANT_DROP = 1.36; // the industrial pendant's height, chain included
 
 // Computed once at module load: content is static, so the layout is too.
 const { featured, slots } = layoutExhibits(projects);
@@ -96,16 +98,30 @@ export function ProjectsRoom() {
                 rotationY={-Math.PI / 2}
             />
 
-            {/* the room has no windows, so it gets its own (shadowless) ceiling lights */}
-            {[x0 + 2.5, CENTER.x, x1 - 2.5].map((x) => (
-                <pointLight
-                    key={x}
-                    position={[x, H - 0.6, CENTER.z]}
-                    intensity={14}
-                    distance={0}
-                    decay={2}
-                />
+            {/* the room has no windows, so it gets its own (shadowless) ceiling lights:
+                two in industrial pendants (the light sits in the shade, 1.36 m below
+                the ceiling), and a plain one over the featured podium and its sign */}
+            {[x0 + 2.5, x1 - 2.5].map((x) => (
+                <group key={x}>
+                    <Model
+                        name="industrial-pendant"
+                        position={[x, H - PENDANT_DROP, CENTER.z]}
+                        collider={false}
+                    />
+                    <pointLight
+                        position={[x, H - PENDANT_DROP + 0.1, CENTER.z]}
+                        intensity={10}
+                        distance={0}
+                        decay={2}
+                    />
+                </group>
             ))}
+            <pointLight
+                position={[CENTER.x, H - 0.6, CENTER.z]}
+                intensity={14}
+                distance={0}
+                decay={2}
+            />
         </group>
     );
 }

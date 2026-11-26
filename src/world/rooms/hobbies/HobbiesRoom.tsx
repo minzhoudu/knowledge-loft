@@ -6,6 +6,7 @@ import { Block } from '@/world/greybox/Block';
 import { Label } from '@/world/greybox/Label';
 import { Lamp } from '@/world/environment/Lamp';
 import { Interactable } from '@/world/interaction/Interactable';
+import { Model } from '@/world/models/Model';
 import { CENTER, DOOR, layoutHobbies, ROOM, WINDOW, type HobbySpot } from './layout';
 
 const { x0, x1, z0, z1, height: H, wall: T } = ROOM;
@@ -69,9 +70,9 @@ export function HobbiesRoom() {
                 {spots.map((spot) => (
                     <HobbyDisplay key={spot.hobby.slug} spot={spot} />
                 ))}
-
-                <Lounge />
             </RigidBody>
+
+            <Lounge />
 
             {/* you can see out of the window, not walk out of it */}
             <CuboidCollider
@@ -125,27 +126,124 @@ function HobbyDisplay({ spot }: { spot: HobbySpot }) {
                 action={{ kind: 'panel', panel: { kind: 'hobby', slug: hobby.slug } }}
             >
                 <Block size={[1.4, 0.75, 0.6]} position={[0, 0.375, 0.32]} surface="accent" />
-                <Block size={[0.4, 0.4, 0.4]} position={[0, 0.95, 0.32]} color="#e9d2b8" />
+                <HobbyProps slug={hobby.slug} />
                 <Block size={[1.7, 1.1, 0.05]} position={[0, 2.0, 0.025]} surface="accent" />
             </Interactable>
         </group>
     );
 }
 
-/** Two armchairs and a low table facing the window: the place to sit and look out. */
+const TABLE_TOP = 0.75;
+
+/**
+ * What stands on each hobby's table, by slug. The table's top centre is at
+ * [0, TABLE_TOP, 0.32]; local +z points into the room. A hobby without an
+ * entry here gets a plain stand-in box.
+ */
+function HobbyProps({ slug }: { slug: string }) {
+    const y = TABLE_TOP;
+    switch (slug) {
+        case 'learning-and-ai':
+            return (
+                <>
+                    <Model name="laptop" position={[-0.15, y, 0.3]} collider={false} />
+                    <Model
+                        name="desk-lamp"
+                        position={[0.5, y, 0.25]}
+                        rotationY={-2.2}
+                        collider={false}
+                    />
+                </>
+            );
+        case 'scuba-diving':
+            return (
+                <>
+                    <Model
+                        name="shark"
+                        position={[-0.3, y, 0.3]}
+                        rotationY={Math.PI / 2}
+                        collider={false}
+                    />
+                    <Model
+                        name="ray"
+                        position={[0.38, y, 0.28]}
+                        rotationY={-Math.PI / 2}
+                        collider={false}
+                    />
+                    <Model
+                        name="scuba-mask"
+                        position={[0.08, y, 0.47]}
+                        rotationY={0.4}
+                        collider={false}
+                    />
+                    <Model
+                        name="shell"
+                        position={[-0.55, y, 0.53]}
+                        rotationY={0.6}
+                        collider={false}
+                    />
+                </>
+            );
+        case 'reading':
+            return (
+                <>
+                    <Model name="books" position={[-0.25, y, 0.28]} collider={false} />
+                    <Model name="vase" position={[0.45, y, 0.3]} collider={false} />
+                </>
+            );
+        case 'co-op-games':
+            return (
+                <>
+                    {/* a whole desk set (case, monitor, keyboard, mouse). Modelled
+                        with its front toward +x, so a quarter turn faces it into the room. */}
+                    <Model
+                        name="gaming-pc"
+                        position={[0, y, 0.32]}
+                        rotationY={-Math.PI / 2}
+                        scale={0.9}
+                        collider={false}
+                    />
+                </>
+            );
+        default:
+            return <Block size={[0.4, 0.4, 0.4]} position={[0, y + 0.2, 0.32]} color="#e9d2b8" />;
+    }
+}
+
+/**
+ * Two swivel lounge chairs and a marble table facing the window: the place to
+ * sit and look out. Plus shelves on the free stretch of the east wall.
+ */
 function Lounge() {
     const cx = CENTER.x;
     const cz = CENTER.z + 1.2;
     return (
         <>
-            <Block size={[0.9, 0.45, 0.9]} position={[cx - 1.2, 0.225, cz - 0.3]} />
-            <Block size={[0.9, 0.5, 0.2]} position={[cx - 1.2, 0.7, cz - 0.65]} />
-            <Block size={[0.9, 0.45, 0.9]} position={[cx + 1.2, 0.225, cz - 0.3]} />
-            <Block size={[0.9, 0.5, 0.2]} position={[cx + 1.2, 0.7, cz - 0.65]} />
-            <Block size={[1.0, 0.4, 0.6]} position={[cx, 0.2, cz + 0.4]} />
-            {/* floor lamp */}
-            <Block size={[0.06, 1.6, 0.06]} position={[cx + 2.3, 0.8, cz + 1.0]} surface="metal" />
+            <Model name="lounge-chair" position={[cx - 1.25, 0, cz - 0.5]} rotationY={0.35} />
+            <Model name="lounge-chair" position={[cx + 1.25, 0, cz - 0.5]} rotationY={-0.35} />
+            <Model name="round-table" position={[cx, 0, cz + 0.55]} />
+
+            {/* floor lamp (a Lamp sits in its shade, see HobbiesRoom) */}
+            <RigidBody type="fixed" colliders="cuboid">
+                <Block
+                    size={[0.06, 1.6, 0.06]}
+                    position={[cx + 2.3, 0.8, cz + 1.0]}
+                    surface="metal"
+                />
+            </RigidBody>
             <Block size={[0.4, 0.3, 0.4]} position={[cx + 2.3, 1.75, cz + 1.0]} color="#f3e3c7" />
+
+            <Model name="cube-shelves" position={[x1 - 0.2, 0, 1.4]} />
+            {/* a record player on top: the vinyl crackle you hear in here */}
+            <Model
+                name="turntable"
+                position={[x1 - 0.2, 1.56, 1.6]}
+                rotationY={-Math.PI / 2}
+                collider={false}
+            />
+            <Model name="vase" position={[x1 - 0.2, 1.56, 1.05]} collider={false} />
+            <Model name="monstera" position={[x0 + 0.6, 0, z1 - 0.6]} />
+            <Model name="plant-pot" position={[x1 - 0.6, 0, z1 - 0.6]} />
         </>
     );
 }
