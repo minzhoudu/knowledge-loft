@@ -1,0 +1,7 @@
+# Commits that only reformat code. `git blame` skips them so each line is
+# attributed to the commit that actually changed its content.
+# GitHub uses this file automatically; locally run once:
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# Add Prettier with project style and format codebase
+5ba1766e56a8604618b264b6c05c21a6ef9b5bdc
