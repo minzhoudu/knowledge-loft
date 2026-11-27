@@ -73,6 +73,12 @@ export function Hud() {
         function onKey(e: KeyboardEvent) {
             const s = useWorld.getState();
             const esc = e.code === 'Escape' && !e.repeat; // holding Esc mustn't toggle the pause over and over
+            // Typing into a text box (the kiosk's chat): the keys are letters, not
+            // shortcuts. "E" mustn't step you back mid-word. Esc still works.
+            const typing =
+                e.target instanceof HTMLElement &&
+                e.target.closest('input, textarea, [contenteditable="true"]');
+            if (typing && e.code !== 'Escape') return;
             if (
                 e.code === 'Tab' &&
                 !s.constellation &&

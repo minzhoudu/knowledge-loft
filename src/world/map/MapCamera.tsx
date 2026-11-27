@@ -117,13 +117,15 @@ export function MapCamera() {
             overview(camera as PerspectiveCamera, rig.toPos, rig.toQuat);
             showCeilings(false);
         } else if (phase === 'diving' && rig.phase !== 'diving') {
-            const room = world.mapTarget ? MAP_ROOMS[world.mapTarget] : null;
-            if (!room) return;
+            // A room's door (picked on the map), or a particular spot (a trip).
+            const to =
+                world.mapDestination ?? (world.mapTarget ? MAP_ROOMS[world.mapTarget].entry : null);
+            if (!to) return;
             start('diving', camera);
             // Move the body first: when the camera arrives, Player takes over from there.
-            playerControl.teleport?.(room.entry.x, room.entry.z);
-            rig.toPos.set(room.entry.x, EYE, room.entry.z);
-            rig.toQuat.setFromEuler(euler.set(0, room.entry.yaw, 0));
+            playerControl.teleport?.(to.x, to.z);
+            rig.toPos.set(to.x, EYE, to.z);
+            rig.toQuat.setFromEuler(euler.set(0, to.yaw, 0));
         } else if (phase === 'returning' && rig.phase !== 'returning') {
             start('returning', camera);
             rig.toPos.copy(rig.homePos);
@@ -139,7 +141,8 @@ export function MapCamera() {
         if (rig.t < 1) return;
 
         if (rig.phase === 'rising') {
-            world.setMapPhase('open');
+            // A trip doesn't wait for a pick: straight on down.
+            world.setMapPhase(world.mapDestination ? 'diving' : 'open');
         } else {
             // Landed (in a new room, or back where you were): walls up, walk on.
             rig.phase = null;

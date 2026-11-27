@@ -51,7 +51,7 @@ export type Panel =
     | { kind: 'repo'; name: string };
 
 /** Places where you stop and read a screen, sitting or standing (see world/seats/seats.ts). */
-export type SeatId = 'lobby-desk' | 'lobby-career' | 'lobby-arcade';
+export type SeatId = 'lobby-desk' | 'lobby-career' | 'lobby-arcade' | 'lobby-kiosk';
 
 /**
  * Sitting down happens in three steps: the camera glides to the seat
@@ -65,6 +65,9 @@ export type SeatPhase = 'arriving' | 'seated' | 'leaving';
  * where you were ("returning").
  */
 export type MapPhase = 'rising' | 'open' | 'diving' | 'returning';
+
+/** A spot on the floor to land at, and which way to face (camera yaw). */
+export type Destination = { x: number; z: number; yaw: number };
 
 /**
  * Taking a book from the shelf: it slides out and flies to you ("taking"),
@@ -151,6 +154,14 @@ type WorldState = {
     mapPhase: MapPhase | null;
     /** The room picked on the map (it's where the dive ends). */
     mapTarget: RoomId | null;
+    /**
+     * A trip to a particular spot instead of a room's door (the AI kiosk's
+     * "take me there"): where to land, facing which way. With it set, the map
+     * view doesn't wait for a pick: it rises, then dives straight there.
+     */
+    mapDestination: Destination | null;
+    /** Get up from wherever you are and fly to a spot (rise over the loft, then dive). */
+    travel: (destination: Destination) => void;
     openMap: () => void;
     /** Close the map: back to where you were. */
     closeMap: () => void;
@@ -231,6 +242,17 @@ export const useWorld = create<WorldState>((set) => ({
     setConstellationPhase: (constellation) => set({ constellation }),
     mapPhase: null,
     mapTarget: null,
+    mapDestination: null,
+    travel: (mapDestination) =>
+        set({
+            seat: null,
+            seatPhase: null,
+            mode: 'map',
+            mapPhase: 'rising',
+            mapTarget: null,
+            mapDestination,
+            focused: null,
+        }),
     openMap: () => set({ mode: 'map', mapPhase: 'rising', mapTarget: null, focused: null }),
     closeMap: () =>
         set((s) =>
@@ -238,7 +260,8 @@ export const useWorld = create<WorldState>((set) => ({
         ),
     jumpTo: (room) =>
         set((s) => (s.mapPhase === 'open' ? { mapPhase: 'diving', mapTarget: room } : {})),
-    setMapPhase: (mapPhase) => set(mapPhase ? { mapPhase } : { mapPhase: null, mapTarget: null }),
+    setMapPhase: (mapPhase) =>
+        set(mapPhase ? { mapPhase } : { mapPhase: null, mapTarget: null, mapDestination: null }),
     lighting: 'live',
     setLighting: (lighting) => set({ lighting }),
     season: 'live',

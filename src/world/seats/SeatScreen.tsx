@@ -2,11 +2,12 @@
 
 import { Html } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, type ReactNode } from 'react';
 import { CanvasTexture, SRGBColorSpace, Vector3 } from 'three';
 import { useWorld, type SeatId } from '@/store/world';
 import { readableZoom } from '@/world/reading';
 import { Section } from '@/ui/sections';
+import { KioskChat } from '@/world/kiosk/KioskChat';
 import { SEATS, type IdleLine, type Seat } from './seats';
 
 /**
@@ -35,7 +36,8 @@ const PAGE_WIDTH = 960;
 export function SeatScreen({ seat }: { seat: SeatId }) {
     const config = SEATS[seat];
     const { screen } = config;
-    const idle = config.page?.idle;
+    const content = config.page ?? config.chat;
+    const idle = content?.idle;
     const reading = useWorld((s) => s.seat === seat && s.seatPhase === 'seated');
     const texture = useMemo(
         () => drawIdle(screen.width, screen.height, idle ?? []),
@@ -44,7 +46,11 @@ export function SeatScreen({ seat }: { seat: SeatId }) {
     useEffect(() => () => texture.dispose(), [texture]);
 
     return (
-        <group position={screen.center} rotation-y={screen.rotationY}>
+        // Turn to face rotationY, after tipping back by tiltUp (Euler order YXZ).
+        <group
+            position={screen.center}
+            rotation={[-(screen.tiltUp ?? 0), screen.rotationY, 0, 'YXZ']}
+        >
             <mesh position-z={0.001}>
                 <planeGeometry args={[screen.width, screen.height]} />
                 {/* Glossy black glass that emits its picture. */}
@@ -57,7 +63,16 @@ export function SeatScreen({ seat }: { seat: SeatId }) {
                     emissiveIntensity={0.85}
                 />
             </mesh>
-            {reading && config.page && <ScreenPage seat={config} page={config.page} />}
+            {reading && config.page && (
+                <ScreenPage seat={config} title={config.page.title}>
+                    <Section id={config.page.section} />
+                </ScreenPage>
+            )}
+            {reading && config.chat && (
+                <ScreenPage seat={config} title={config.chat.title} scroll={false}>
+                    <KioskChat />
+                </ScreenPage>
+            )}
         </group>
     );
 }
@@ -65,7 +80,21 @@ export function SeatScreen({ seat }: { seat: SeatId }) {
 const left = new Vector3();
 const right = new Vector3();
 
-function ScreenPage({ seat, page }: { seat: Seat; page: NonNullable<Seat['page']> }) {
+/**
+ * The live screen: real HTML in a window frame, laid onto the glass. Its
+ * content scrolls (a page), or manages its own layout (the kiosk's chat).
+ */
+function ScreenPage({
+    seat,
+    title,
+    scroll = true,
+    children,
+}: {
+    seat: Seat;
+    title: string;
+    scroll?: boolean;
+    children: ReactNode;
+}) {
     const { screen } = seat;
     const get = useThree((s) => s.get);
     const size = useThree((s) => s.size);
@@ -103,14 +132,18 @@ function ScreenPage({ seat, page }: { seat: Seat; page: NonNullable<Seat['page']
                         <span className="size-2.5 rounded-full bg-[#ff5f57]" />
                         <span className="size-2.5 rounded-full bg-[#febc2e]" />
                         <span className="size-2.5 rounded-full bg-[#28c840]" />
-                        <span className="ml-2">{page.title}</span>
+                        <span className="ml-2">{title}</span>
                         <span className="ml-auto">Esc · {seat.leave.toLowerCase()}</span>
                     </div>
                     <div
-                        className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-8 py-6"
+                        className={`min-h-0 flex-1 ${
+                            scroll
+                                ? 'overflow-y-auto overscroll-contain px-8 py-6'
+                                : 'flex flex-col'
+                        }`}
                         style={{ zoom }}
                     >
-                        <Section id={page.section} />
+                        {children}
                     </div>
                 </div>
             </div>
