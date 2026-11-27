@@ -7,9 +7,10 @@ import type { RoomId } from '@/world/rooms/zones';
  * Light switches and blinds: what each room's switches say, and how far
  * along their animations are.
  *
- * Until you touch a room's light switch, its lamps are automatic: rooms with
- * windows light up at dusk, windowless ones (the gallery, the corridor) are
- * always lit. Flipping the switch overrides that, on or off, for good.
+ * Every room starts with its lamps switched on (see the store's defaults).
+ * A room left without a switch setting follows an automatic rule instead:
+ * rooms with windows light up at dusk, windowless ones (the gallery, the
+ * corridor) are always lit.
  *
  * The store holds what the switches say (React needs that for the prompt);
  * the animated values below (how bright each room's lamps are right now,
@@ -43,5 +44,9 @@ export function lightsOn(room: RoomId) {
     return lightsTarget(room) > 0.5;
 }
 
-/** Per room: how far the blinds are down right now (0 = rolled up, 1 = closed). */
-export const blindDrop: Record<RoomId, number> = { lobby: 0, projects: 0, career: 0, hobbies: 0 };
+/**
+ * Per room: how far the blinds are down right now (0 = rolled up, 1 = closed).
+ * They start down, matching the store's defaults, so they don't roll down
+ * in front of you as the world appears.
+ */
+export const blindDrop: Record<RoomId, number> = { lobby: 1, projects: 0, career: 0, hobbies: 1 };

@@ -24,7 +24,8 @@ import { CarriedBook } from '@/world/bookshelf/CarriedBook';
 import { LoadingCover, PhysicsReady, ReadyWatcher } from '@/world/loading';
 import { ConstellationCamera } from '@/world/constellation/ConstellationCamera';
 import { RoomSwitches } from '@/world/switches/RoomSwitches';
-import { DarkRoom } from '@/world/constellation/DarkRoom';
+import { DarkRoom, HiddenInside } from '@/world/constellation/DarkRoom';
+import { SkillConstellation } from '@/world/constellation/SkillConstellation';
 
 /**
  * The 3D experience. Loaded client-only (see WorldClient), because WebGL,
@@ -61,10 +62,14 @@ export default function Experience() {
                 <Suspense fallback={null}>
                     {/* Physics suspends while the Rapier WASM module downloads */}
                     <Physics debug={debug}>
-                        <Lobby />
-                        <ProjectsRoom />
-                        <CareerRoom />
-                        <HobbiesRoom />
+                        <HiddenInside>
+                            <Lobby />
+                            <ProjectsRoom />
+                            <CareerRoom />
+                            <HobbiesRoom />
+                        </HiddenInside>
+                        {/* outside the hidden group: it's what you step into */}
+                        <SkillConstellation />
                         <Player />
                         <PhysicsReady />
                     </Physics>
@@ -73,8 +78,10 @@ export default function Experience() {
                 <CarriedBook />
                 <ConstellationCamera />
                 <DarkRoom />
-                <Outside />
-                <RoomSwitches />
+                <HiddenInside>
+                    <Outside />
+                    <RoomSwitches />
+                </HiddenInside>
                 <MapCamera />
                 <MapOverlay />
                 <InteractionSystem />

@@ -1,7 +1,7 @@
 'use client';
 
 import { useFrame } from '@react-three/fiber';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, type ReactNode } from 'react';
 import { AdditiveBlending, BackSide, ShaderMaterial, type Group, type Mesh } from 'three';
 import { blend, INSIDE } from './immersion';
 
@@ -16,6 +16,14 @@ import { blend, INSIDE } from './immersion';
  * reached. Then the grid, and then the stars, which are drawn last
  * (renderOrder, see SkillConstellation) and so sit on top of the dark.
  * Fading the dome in and out is just one number, its opacity.
+ *
+ * Painting over the room's colour isn't enough, though. The depth buffer
+ * (how far away the nearest thing is, per pixel, which the GPU checks
+ * before drawing anything) still holds the room, so a star behind the
+ * bookshelf would be hidden by a shelf you can't see. So the dome also
+ * writes the farthest possible depth everywhere it draws: as far as the
+ * stars are concerned, the room is gone, and they only hide behind each
+ * other.
  */
 
 /** Draw order among the transparent objects: room, then dome, grid, stars. */
@@ -39,6 +47,8 @@ const DOME_FRAGMENT = /* glsl */ `
         vec3 overhead = vec3(0.002, 0.002, 0.004);
         vec3 color = mix(horizon, overhead, smoothstep(-0.1, 0.85, vDir.y));
         gl_FragColor = vec4(color, opacity);
+        // As far away as anything can be: wipes the room out of the depth buffer.
+        gl_FragDepth = 1.0;
         #include <tonemapping_fragment>
         #include <colorspace_fragment>
     }
@@ -77,6 +87,22 @@ const GRID_FRAGMENT = /* glsl */ `
     }
 `;
 
+/**
+ * Wrap everything the dark room hides (the rooms, the street outside). Once
+ * you're fully inside the constellation it stops being drawn at all: the
+ * dome already covers it, but the room would still be in the depth buffer
+ * and the ambient-occlusion pass (which shades creases by reading depth),
+ * leaving faint ghosts of the furniture over the stars. Not drawing it also
+ * makes those frames cheaper. Physics doesn't care: colliders aren't drawn.
+ */
+export function HiddenInside({ children }: { children: ReactNode }) {
+    const group = useRef<Group>(null);
+    useFrame(() => {
+        if (group.current) group.current.visible = blend.t < 0.999;
+    });
+    return <group ref={group}>{children}</group>;
+}
+
 export function DarkRoom() {
     const group = useRef<Group>(null);
     const dome = useRef<Mesh>(null);
@@ -90,7 +116,7 @@ export function DarkRoom() {
                 side: BackSide, // we're inside it
                 transparent: true,
                 depthTest: false, // paints over the room, whatever is in front
-                depthWrite: false,
+                depthWrite: true, // ...and resets the depth (see gl_FragDepth above)
             }),
             grid: new ShaderMaterial({
                 uniforms: { opacity: { value: 0 } },

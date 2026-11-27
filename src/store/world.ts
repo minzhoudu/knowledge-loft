@@ -202,9 +202,11 @@ export const useWorld = create<WorldState>((set) => ({
     focused: null,
     openPanel: null,
     doors: {},
-    lights: {},
+    // Spawning in: lamps on and blinds down, a calm, warmly lit room whatever
+    // the hour. Flip a switch to change either.
+    lights: { lobby: true, projects: true, career: true, hobbies: true },
     setLights: (room, on) => set((s) => ({ lights: { ...s.lights, [room]: on } })),
-    blinds: {},
+    blinds: { lobby: true, hobbies: true },
     toggleBlinds: (room) => set((s) => ({ blinds: { ...s.blinds, [room]: !s.blinds[room] } })),
     seat: null,
     seatPhase: null,
