@@ -109,8 +109,18 @@ export function HobbiesRoom() {
             />
 
             {/* lamps come on at dusk: the floor lamp by the lounge, and a ceiling light */}
-            <Lamp position={[CENTER.x + 2.3, 1.5, CENTER.z + 2.2]} intensity={8} bulbRadius={0} />
-            <Lamp position={[CENTER.x, H - 0.5, CENTER.z - 1.5]} intensity={14} color="#ffe2b8" />
+            <Lamp
+                room="hobbies"
+                position={[CENTER.x + 2.3, 1.5, CENTER.z + 2.2]}
+                intensity={8}
+                bulbRadius={0}
+            />
+            <Lamp
+                room="hobbies"
+                position={[CENTER.x, H - 0.5, CENTER.z - 1.5]}
+                intensity={14}
+                color="#ffe2b8"
+            />
         </group>
     );
 }

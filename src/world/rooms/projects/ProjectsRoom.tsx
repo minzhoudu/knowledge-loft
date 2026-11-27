@@ -6,6 +6,7 @@ import { Block } from '@/world/greybox/Block';
 import { Label } from '@/world/greybox/Label';
 import { GithubWall } from '@/world/github/GithubWall';
 import { Interactable } from '@/world/interaction/Interactable';
+import { Lamp } from '@/world/environment/Lamp';
 import { Model } from '@/world/models/Model';
 import { CENTER, DOOR, layoutExhibits, ROOM, type ExhibitSlot } from './layout';
 
@@ -108,19 +109,19 @@ export function ProjectsRoom() {
                         position={[x, H - PENDANT_DROP, CENTER.z]}
                         collider={false}
                     />
-                    <pointLight
+                    <Lamp
+                        room="projects"
                         position={[x, H - PENDANT_DROP + 0.1, CENTER.z]}
                         intensity={10}
-                        distance={0}
-                        decay={2}
+                        bulbRadius={0}
                     />
                 </group>
             ))}
-            <pointLight
+            <Lamp
+                room="projects"
                 position={[CENTER.x, H - 0.6, CENTER.z]}
                 intensity={14}
-                distance={0}
-                decay={2}
+                bulbRadius={0}
             />
         </group>
     );

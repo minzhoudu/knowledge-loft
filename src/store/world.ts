@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { releaseMouse } from '@/world/player/input';
+import { lightsOn } from '@/world/switches/state';
 import type { LightingMode, SeasonMode } from '@/world/environment/time';
 import type { LiveWeather, WeatherMode } from '@/world/environment/weather';
 import type { GithubData } from '@/world/github/types';
@@ -90,7 +91,8 @@ export type Action =
     | { kind: 'door'; door: string }
     | { kind: 'sit'; seat: SeatId }
     | { kind: 'book'; book: string }
-    | { kind: 'constellation' };
+    | { kind: 'constellation' }
+    | { kind: 'switch'; room: RoomId; what: 'lights' | 'blinds' };
 
 /** The interactable the crosshair is on. `id` is unique per object in the world. */
 export type FocusTarget = { id: string; label: string; action: Action };
@@ -118,6 +120,15 @@ type WorldState = {
     openPanel: Panel | null;
     /** Door id -> open? Doors not listed are closed. */
     doors: Record<string, boolean>;
+    /**
+     * Each room's light switch, once it's been flipped (on/off). A room not
+     * listed is on automatic (see world/switches/state.ts).
+     */
+    lights: Partial<Record<RoomId, boolean>>;
+    setLights: (room: RoomId, on: boolean) => void;
+    /** Each room's blinds: true = down. Rooms not listed have them up. */
+    blinds: Partial<Record<RoomId, boolean>>;
+    toggleBlinds: (room: RoomId) => void;
     /** Where you're sitting (null while walking), and how far into sitting down you are. */
     seat: SeatId | null;
     seatPhase: SeatPhase | null;
@@ -191,6 +202,10 @@ export const useWorld = create<WorldState>((set) => ({
     focused: null,
     openPanel: null,
     doors: {},
+    lights: {},
+    setLights: (room, on) => set((s) => ({ lights: { ...s.lights, [room]: on } })),
+    blinds: {},
+    toggleBlinds: (room) => set((s) => ({ blinds: { ...s.blinds, [room]: !s.blinds[room] } })),
     seat: null,
     seatPhase: null,
     sit: (seat) => set({ seat, seatPhase: 'arriving', mode: 'seated', focused: null }),
@@ -277,6 +292,10 @@ export function performAction(action: Action) {
     } else if (action.kind === 'book') {
         s.takeBook(action.book);
         releaseMouse();
+    } else if (action.kind === 'switch') {
+        // Like a door: flip it and keep walking.
+        if (action.what === 'lights') s.setLights(action.room, !lightsOn(action.room));
+        else s.toggleBlinds(action.room);
     } else if (action.kind === 'constellation') {
         // The mouse stays captured: inside, you look around with it as usual.
         s.enterConstellation();

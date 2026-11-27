@@ -13,6 +13,7 @@ import {
     toggleFullscreen,
 } from '@/world/player/input';
 import { SEATS } from '@/world/seats/seats';
+import { lightsOn } from '@/world/switches/state';
 import { Clock, EnvironmentControls, useWeatherFeed } from './Clock';
 import { useGithubFeed } from './github';
 import { ArcadePad } from './ArcadePad';
@@ -52,6 +53,9 @@ export function Hud() {
     const focusedDoorOpen = useWorld((s) =>
         s.focused?.action.kind === 'door' ? !!s.doors[s.focused.action.door] : false,
     );
+    // Re-render when a switch is flipped, so its prompt says what it'll do next.
+    useWorld((s) => s.lights);
+    useWorld((s) => s.blinds);
     const verb = focused ? actionVerb(focused, focusedDoorOpen) : '';
     useWeatherFeed();
     useGithubFeed();
@@ -408,6 +412,11 @@ function actionVerb(target: FocusTarget, doorOpen: boolean) {
     if (target.action.kind === 'sit') return SEATS[target.action.seat].verb;
     if (target.action.kind === 'book') return 'Read';
     if (target.action.kind === 'constellation') return 'Step inside';
+    if (target.action.kind === 'switch') {
+        const { room, what } = target.action;
+        if (what === 'blinds') return useWorld.getState().blinds[room] ? 'Raise' : 'Lower';
+        return lightsOn(room) ? 'Turn off' : 'Turn on';
+    }
     return 'Inspect';
 }
 

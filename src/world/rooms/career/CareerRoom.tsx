@@ -5,6 +5,7 @@ import { companies } from '@/content';
 import { Block } from '@/world/greybox/Block';
 import { Label } from '@/world/greybox/Label';
 import { Interactable } from '@/world/interaction/Interactable';
+import { Lamp } from '@/world/environment/Lamp';
 import { Model } from '@/world/models/Model';
 import { DOOR, layoutStations, roomFor, type Station } from './layout';
 
@@ -118,12 +119,12 @@ export function CareerRoom() {
             {Array.from({ length: LIGHT_COUNT }, (_, i) => {
                 const z = z1 - ((i + 0.5) * L) / LIGHT_COUNT;
                 return (
-                    <pointLight
+                    <Lamp
                         key={i}
+                        room="career"
                         position={[CX, H - 0.6, z]}
                         intensity={12}
-                        distance={0}
-                        decay={2}
+                        bulbRadius={0}
                     />
                 );
             })}

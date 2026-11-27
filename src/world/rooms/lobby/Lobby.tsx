@@ -191,7 +191,7 @@ export function Lobby() {
                         position={[x, (H + y + 0.12) / 2, z]}
                         surface="metal"
                     />
-                    <Lamp position={[x, y, z]} intensity={12} bulbRadius={0.14} />
+                    <Lamp room="lobby" position={[x, y, z]} intensity={12} bulbRadius={0.14} />
                 </group>
             ))}
         </group>

@@ -23,6 +23,7 @@ import { SeatCamera } from '@/world/seats/SeatCamera';
 import { CarriedBook } from '@/world/bookshelf/CarriedBook';
 import { LoadingCover, PhysicsReady, ReadyWatcher } from '@/world/loading';
 import { ConstellationCamera } from '@/world/constellation/ConstellationCamera';
+import { RoomSwitches } from '@/world/switches/RoomSwitches';
 import { DarkRoom } from '@/world/constellation/DarkRoom';
 
 /**
@@ -32,7 +33,7 @@ import { DarkRoom } from '@/world/constellation/DarkRoom';
  * Add ?debug to the URL to draw every physics collider as a wireframe,
  * and ?perf for a performance meter (frame rate, CPU and GPU time per frame).
  */
-/** Overall brightness, like a camera's exposure setting. */
+/** Overall brightness at first, like a camera's exposure (Lighting adjusts it with the daylight). */
 const EXPOSURE = 1.25;
 
 export default function Experience() {
@@ -73,6 +74,7 @@ export default function Experience() {
                 <ConstellationCamera />
                 <DarkRoom />
                 <Outside />
+                <RoomSwitches />
                 <MapCamera />
                 <MapOverlay />
                 <InteractionSystem />

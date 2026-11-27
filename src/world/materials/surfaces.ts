@@ -63,8 +63,10 @@ type Look = {
 const LOOKS: Record<Surface, Look> = {
     floor: { set: 'parquet', color: '#ffffff', envMapIntensity: 0.45 },
     concrete: { set: 'concrete', color: '#cfcac3', roughness: 0.8, envMapIntensity: 0.6 },
-    wall: { set: 'plaster', color: '#fbf1e4', normalScale: 0.6 },
-    ceiling: { set: 'plaster', color: '#fdf6ec', normalScale: 0.3 },
+    // A warm greige rather than near-white: in full daylight, near-white walls
+    // glare (and the room reads as a flat white box).
+    wall: { set: 'plaster', color: '#e6d9c6', normalScale: 0.6 },
+    ceiling: { set: 'plaster', color: '#ede3d4', normalScale: 0.3 },
     brick: { set: 'brick', color: '#ffffff' },
     wood: { set: 'oak', color: '#ffffff' },
     accent: { set: 'oak', color: '#f2b77a', roughness: 0.8 },

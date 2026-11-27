@@ -6,7 +6,7 @@ import { Color, Vector3, type DirectionalLight, type Fog, type HemisphereLight }
 import { useWorld } from '@/store/world';
 import { Ground, groundMaterial } from '@/world/environment/Ground';
 import { Precipitation } from '@/world/environment/Precipitation';
-import { EnvironmentMap } from '@/world/environment/EnvironmentMap';
+import { ENV_INTENSITY, EnvironmentMap } from '@/world/environment/EnvironmentMap';
 import { createSkyMaterial, Sky, type SkyUniforms } from '@/world/environment/Sky';
 import { daylight, goldenHour, sunAt } from '@/world/environment/sun';
 import {
@@ -20,6 +20,8 @@ import {
 } from '@/world/environment/time';
 import { PRESET_LOOK } from '@/world/environment/weather';
 import { WORLD_BOUNDS as B } from '@/world/rooms/bounds';
+import { roomAt } from '@/world/rooms/zones';
+import { blindDrop } from '@/world/switches/state';
 
 // Aim the sun at the middle of everything that's built.
 const CENTER = new Vector3((B.minX + B.maxX) / 2, 0, (B.minZ + B.maxZ) / 2);
@@ -33,6 +35,15 @@ const TIME_EASE = 1.1; // time-lapse speed after a Light change (~3 s)
 const WEATHER_EASE = 0.5; // weather drifts in over a few seconds
 const SNOW_SETTLE = 0.07; // snow covers the ground over ~15-20 s while it's snowing...
 const SNOW_MELT = 0.015; // ...and melts slower still
+/**
+ * Exposure, like a camera's: brighter at night so lamplit rooms aren't
+ * murky, lower by day so sunlit white walls don't glare (your eyes do the
+ * same, adapting to the light).
+ */
+const EXPOSURE_NIGHT = 1.25;
+const EXPOSURE_DAY = 1.0;
+/** How much of the daylight closed blinds keep out of the room you're in. */
+const BLINDS_BLOCK = 0.7;
 
 // Palette. The render loop blends between these.
 const C = {
@@ -70,6 +81,7 @@ const sky = createSkyMaterial();
 const lightDir = new Vector3();
 const groundTarget = new Color();
 const ground = { snowCover: 0 }; // 0..1, how much snow has settled on the ground
+const shade = { value: 0 }; // how shaded the room you're in is by its blinds, eased
 
 /** Moves `value` toward `target` by a frame-rate-independent fraction. */
 function ease(value: number, target: number, rate: number, delta: number) {
@@ -111,7 +123,7 @@ export function Lighting() {
         };
     }, [get]);
 
-    useFrame((_, delta) => {
+    useFrame(({ camera, gl, scene }, delta) => {
         const light = sun.current;
         const amb = hemi.current;
         if (!light || !amb) return;
@@ -189,9 +201,17 @@ export function Lighting() {
         light.position.copy(CENTER).addScaledVector(lightDir, LIGHT_DISTANCE);
 
         // 4c. Ambient: bright blue-white by day, dim blue at night, a bit flatter when overcast.
+        // Ambient light has no position, so it can't be blocked by blinds the way
+        // the sun is (by their shadow). Instead it follows the room you're in:
+        // the further its blinds are down, the less daylight reaches you.
+        const room = roomAt(camera.position.x, camera.position.z);
+        shade.value = ease(shade.value, room ? blindDrop[room] : 0, 4, delta);
+        const open = 1 - BLINDS_BLOCK * shade.value * day;
         amb.color.lerpColors(C.hemiSkyNight, C.hemiSkyDay, day);
         amb.groundColor.lerpColors(C.hemiGroundNight, C.hemiGroundDay, day);
-        amb.intensity = (0.35 + 1.65 * day) * (1 - 0.2 * cloud);
+        amb.intensity = (0.35 + 1.4 * day) * (1 - 0.2 * cloud) * open;
+        scene.environmentIntensity = ENV_INTENSITY * open; // the sky's reflections, too
+        gl.toneMappingExposure = EXPOSURE_NIGHT + (EXPOSURE_DAY - EXPOSURE_NIGHT) * day;
 
         // 4d. Fog matches the horizon, so the far ground melts into the sky.
         // Rain and snow pull it closer, like real murky weather.
