@@ -34,6 +34,7 @@ export type ModelName =
     | 'sofa'
     | 'steel-shelves'
     | 'stool'
+    | 'street-lamp'
     | 'turntable'
     | 'vase'
     | 'wall-lamp';

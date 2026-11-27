@@ -82,6 +82,8 @@ const MODELS = [
     { name: 'shark', id: 'bronze_shark_statue', tex: 512 },
     { name: 'ray', id: 'bronze_ray_statue', tex: 512 },
     { name: 'shell', id: 'lambis_shell', tex: 512 },
+    // outside
+    { name: 'street-lamp', id: 'street_lamp_01', tex: 512, simplify: 0.35 },
 
     // Sketchfab (CC BY 4.0): downloaded by hand into .models-raw/sketchfab/
     {

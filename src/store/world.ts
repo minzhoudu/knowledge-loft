@@ -3,6 +3,7 @@ import { releaseMouse } from '@/world/player/input';
 import type { LightingMode, SeasonMode } from '@/world/environment/time';
 import type { LiveWeather, WeatherMode } from '@/world/environment/weather';
 import type { GithubData } from '@/world/github/types';
+import type { RoomId } from '@/world/rooms/zones';
 
 /**
  * Global world state.
@@ -21,7 +22,8 @@ export type Mode =
     | 'paused' // stopped (Esc or the pause button), not reading anything
     | 'reading' // a content panel is open
     | 'seated' // sitting at a desk, reading its screen (see world/seats)
-    | 'holding'; // holding a book from the shelf, reading it (see world/bookshelf)
+    | 'holding' // holding a book from the shelf, reading it (see world/bookshelf)
+    | 'map'; // looking down at the whole loft, picking a room to jump to (see world/map)
 
 /**
  * How mouse/finger movement turns the camera:
@@ -55,6 +57,13 @@ export type SeatId = 'lobby-desk' | 'lobby-career';
  * ("arriving"), you read ("seated"), and it glides back ("leaving").
  */
 export type SeatPhase = 'arriving' | 'seated' | 'leaving';
+
+/**
+ * The map view: the camera rises above the loft ("rising"), you pick a room
+ * ("open"), then it either dives into that room ("diving") or goes back to
+ * where you were ("returning").
+ */
+export type MapPhase = 'rising' | 'open' | 'diving' | 'returning';
 
 /**
  * Taking a book from the shelf: it slides out and flies to you ("taking"),
@@ -110,6 +119,14 @@ type WorldState = {
     /** Start putting the book back (it closes and flies to its shelf, then walking resumes). */
     putBack: () => void;
     setBookPhase: (phase: BookPhase | null) => void;
+    mapPhase: MapPhase | null;
+    /** The room picked on the map (it's where the dive ends). */
+    mapTarget: RoomId | null;
+    openMap: () => void;
+    /** Close the map: back to where you were. */
+    closeMap: () => void;
+    jumpTo: (room: RoomId) => void;
+    setMapPhase: (phase: MapPhase | null) => void;
     /** Real clock, or a fixed daytime/night-time preview. */
     lighting: LightingMode;
     setLighting: (lighting: LightingMode) => void;
@@ -166,6 +183,16 @@ export const useWorld = create<WorldState>((set) => ({
     putBack: () =>
         set((s) => (s.book && s.bookPhase !== 'returning' ? { bookPhase: 'returning' } : {})),
     setBookPhase: (bookPhase) => set(bookPhase ? { bookPhase } : { book: null, bookPhase: null }),
+    mapPhase: null,
+    mapTarget: null,
+    openMap: () => set({ mode: 'map', mapPhase: 'rising', mapTarget: null, focused: null }),
+    closeMap: () =>
+        set((s) =>
+            s.mapPhase === 'rising' || s.mapPhase === 'open' ? { mapPhase: 'returning' } : {},
+        ),
+    jumpTo: (room) =>
+        set((s) => (s.mapPhase === 'open' ? { mapPhase: 'diving', mapTarget: room } : {})),
+    setMapPhase: (mapPhase) => set(mapPhase ? { mapPhase } : { mapPhase: null, mapTarget: null }),
     lighting: 'live',
     setLighting: (lighting) => set({ lighting }),
     season: 'live',

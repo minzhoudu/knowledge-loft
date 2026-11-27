@@ -32,6 +32,7 @@ re-encoded, and some parts removed or re-materialed (each model's `fix` in the s
 | `shark.glb`              | [bronze_shark_statue](https://polyhaven.com/a/bronze_shark_statue) (Poly Haven)                                                | CC0       |
 | `ray.glb`                | [bronze_ray_statue](https://polyhaven.com/a/bronze_ray_statue) (Poly Haven)                                                    | CC0       |
 | `shell.glb`              | [lambis_shell](https://polyhaven.com/a/lambis_shell) (Poly Haven)                                                              | CC0       |
+| `street-lamp.glb`        | [street_lamp_01](https://polyhaven.com/a/street_lamp_01) (Poly Haven)                                                          | CC0       |
 | `gaming-pc.glb`          | [Gaming Desktop PC](https://sketchfab.com/3d-models/d1d8282c9916438091f11aeb28787b66) by Yolala3d                              | CC BY 4.0 |
 | `turntable.glb`          | [Yamaha TT-300 Record Player](https://sketchfab.com/3d-models/3577a2a1a0c24218bd5d768beccf218e) by AleixoAlonso                | CC BY 4.0 |
 | `scuba-mask.glb`         | [Scuba Goggles And Snorkel](https://sketchfab.com/3d-models/6552ed7809cb4eaca6fd3c987165adbb) by milansaman21                  | CC BY 4.0 |

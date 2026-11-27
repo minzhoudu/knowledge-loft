@@ -32,9 +32,12 @@ export type Surface =
     | 'wood' // oak furniture
     | 'accent' // anything you can inspect: oak with a warm tint, so it stands out
     | 'metal' // black steel: window frames, handles, legs
-    | 'plant';
+    | 'plant'
+    | 'asphalt' // the street outside
+    | 'pavers' // the pavement outside
+    | 'kerb'; // kerbstones: pale concrete
 
-type SetName = 'parquet' | 'concrete' | 'plaster' | 'brick' | 'oak';
+type SetName = 'parquet' | 'concrete' | 'plaster' | 'brick' | 'oak' | 'asphalt' | 'pavers';
 
 /** Real-world size of one texture tile, in metres (from Poly Haven's scan sizes). */
 const TILE: Record<SetName, number> = {
@@ -43,6 +46,8 @@ const TILE: Record<SetName, number> = {
     plaster: 3.2,
     brick: 1.5,
     oak: 1.83,
+    asphalt: 2.1,
+    pavers: 2.0,
 };
 
 type Look = {
@@ -65,6 +70,9 @@ const LOOKS: Record<Surface, Look> = {
     accent: { set: 'oak', color: '#f2b77a', roughness: 0.8 },
     metal: { color: '#26282b', roughness: 0.42, metalness: 0.75 },
     plant: { color: '#55804a', roughness: 0.75 },
+    asphalt: { set: 'asphalt', color: '#ffffff', envMapIntensity: 0.5 },
+    pavers: { set: 'pavers', color: '#ffffff', envMapIntensity: 0.5 },
+    kerb: { set: 'concrete', color: '#e4e0d8', roughness: 0.9, envMapIntensity: 0.5 },
 };
 
 /**

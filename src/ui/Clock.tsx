@@ -43,7 +43,17 @@ export function useWeatherFeed() {
 }
 
 /** "21:40 · Novi Sad · 6°C, light rain" while live; "Night preview" etc. otherwise. */
-export function Clock({ className = '' }: { className?: string }) {
+/**
+ * The studio's time, city and weather in one line. `compact` leaves out the
+ * city, for the narrow top bar on phones.
+ */
+export function Clock({
+    className = '',
+    compact = false,
+}: {
+    className?: string;
+    compact?: boolean;
+}) {
     const lighting = useWorld((s) => s.lighting);
     const weather = useWorld((s) => s.weather);
     const live = useWorld((s) => s.liveWeather);
@@ -51,7 +61,7 @@ export function Clock({ className = '' }: { className?: string }) {
 
     const parts =
         lighting === 'live'
-            ? [formatHours(hours), studioCity]
+            ? [formatHours(hours), compact ? '' : studioCity]
             : [`${lighting === 'day' ? 'Day' : 'Night'} preview`];
     if (weather === 'live' && live) parts.push(`${live.temperature}°C, ${live.summary}`);
     else if (weather !== 'live') parts.push(weather);

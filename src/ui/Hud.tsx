@@ -18,6 +18,12 @@ import { useGithubFeed } from './github';
 import { Joystick } from './Joystick';
 import { PanelBody, panelTitle } from './sections';
 
+/** Open the map view; the mouse is freed so you can point at rooms. */
+function openMap() {
+    useWorld.getState().openMap();
+    releaseMouse();
+}
+
 /** Resume walking with whichever look style is already in use. */
 function resume() {
     enterWorld({ preferDrag: useWorld.getState().look === 'drag' });
@@ -39,6 +45,7 @@ export function Hud() {
     const seatPhase = useWorld((s) => s.seatPhase);
     const seat = useWorld((s) => s.seat);
     const bookPhase = useWorld((s) => s.bookPhase);
+    const mapPhase = useWorld((s) => s.mapPhase);
     // Only re-render for the focused door's state, not every door in the world.
     const focusedDoorOpen = useWorld((s) =>
         s.focused?.action.kind === 'door' ? !!s.doors[s.focused.action.door] : false,
@@ -60,7 +67,16 @@ export function Hud() {
         function onKey(e: KeyboardEvent) {
             const s = useWorld.getState();
             const esc = e.code === 'Escape' && !e.repeat; // holding Esc mustn't toggle the pause over and over
-            if (e.code === 'KeyE' && s.mode === 'exploring' && s.focused) {
+            if (e.code === 'Tab' && (s.mode === 'exploring' || s.mode === 'map')) {
+                // Tab opens and closes the map, as in many games (instead of moving
+                // keyboard focus, which means nothing while you walk around).
+                e.preventDefault();
+                if (e.repeat) return;
+                if (s.mode === 'exploring') openMap();
+                else s.closeMap();
+            } else if (esc && s.mode === 'map') {
+                s.closeMap();
+            } else if (e.code === 'KeyE' && s.mode === 'exploring' && s.focused) {
                 performAction(s.focused.action);
             } else if (s.mode === 'seated' && (esc || (e.code === 'KeyE' && !e.repeat))) {
                 // Get up from a desk. The glide back ends in resumeFromKey (SeatCamera).
@@ -117,7 +133,42 @@ export function Hud() {
                         aria-hidden
                         className="pointer-events-none fixed left-1/2 top-1/2 size-1.5 -translate-1/2 rounded-full bg-white/90 shadow-[0_0_0_1px_rgba(0,0,0,0.35)]"
                     />
-                    <Clock className="pointer-events-none fixed left-[max(16px,env(safe-area-inset-left,0px))] top-[calc(env(safe-area-inset-top,0px)+20px)] rounded-full bg-panel px-3 py-1.5 text-fg backdrop-blur" />
+                    {/* Top bar: the clock on the left, buttons on the right. One flex row,
+                        so they can't overlap: the buttons keep their size and the clock
+                        gives way (and trims itself with an ellipsis) on narrow screens. */}
+                    <div className="pointer-events-none fixed inset-x-0 top-[calc(env(safe-area-inset-top,0px)+16px)] z-30 flex items-center justify-between gap-2 pl-[max(16px,env(safe-area-inset-left,0px))] pr-[max(16px,env(safe-area-inset-right,0px))]">
+                        <Clock
+                            compact={touch}
+                            className="min-w-0 truncate rounded-full bg-panel px-3 py-1.5 text-fg backdrop-blur"
+                        />
+                        <div className="pointer-events-auto flex shrink-0 gap-2">
+                            <button
+                                type="button"
+                                onClick={openMap}
+                                className={`rounded-full bg-panel text-fg backdrop-blur hover:text-accent ${
+                                    touch
+                                        ? 'px-4 py-2 text-sm font-semibold'
+                                        : 'px-3 py-1.5 text-sm'
+                                }`}
+                            >
+                                Map
+                                {!touch && (
+                                    <kbd className="ml-2 rounded border border-line px-1.5 py-0.5 font-mono text-xs">
+                                        Tab
+                                    </kbd>
+                                )}
+                            </button>
+                            {touch && (
+                                <button
+                                    type="button"
+                                    onClick={() => useWorld.getState().setMode('paused')}
+                                    className="rounded-full bg-panel px-4 py-2 text-sm font-semibold text-fg backdrop-blur"
+                                >
+                                    Pause
+                                </button>
+                            )}
+                        </div>
+                    </div>
 
                     {relockOnClick && !touch && (
                         <p className="pointer-events-none fixed bottom-[calc(env(safe-area-inset-bottom,0px)+24px)] left-1/2 -translate-x-1/2 rounded-full bg-panel px-3 py-1.5 text-xs text-muted backdrop-blur">
@@ -137,13 +188,6 @@ export function Hud() {
                     {touch && (
                         <>
                             <Joystick />
-                            <button
-                                type="button"
-                                onClick={() => useWorld.getState().setMode('paused')}
-                                className="fixed right-[max(16px,env(safe-area-inset-right,0px))] top-[calc(env(safe-area-inset-top,0px)+16px)] rounded-full bg-panel px-4 py-2 text-sm font-semibold text-fg backdrop-blur"
-                            >
-                                Pause
-                            </button>
                             {focused && (
                                 <button
                                     type="button"
@@ -262,6 +306,22 @@ export function Hud() {
                     )}
                     {leaveLabel(SEATS[seat])}
                 </button>
+            )}
+
+            {mode === 'map' && mapPhase === 'open' && (
+                <div className="pointer-events-none fixed inset-x-0 top-[calc(env(safe-area-inset-top,0px)+16px)] z-30 flex justify-center px-4">
+                    <div className="pointer-events-auto flex items-center gap-3 rounded-full bg-panel px-4 py-2 text-sm text-fg backdrop-blur">
+                        <span>Pick a room to jump in</span>
+                        <button
+                            type="button"
+                            onClick={() => useWorld.getState().closeMap()}
+                            className="rounded-full border border-line px-3 py-1 text-xs hover:border-accent"
+                        >
+                            {!touch && <span className="mr-1 font-mono">Esc</span>}
+                            Back
+                        </button>
+                    </div>
+                </div>
             )}
 
             {mode === 'holding' && bookPhase !== 'returning' && (

@@ -13,6 +13,13 @@ type Props = {
     color?: string;
     /** Size of the visible bulb; 0 hides it (light only). */
     bulbRadius?: number;
+    /**
+     * Whether it lights its surroundings. Off = just a glowing bulb, for lamps
+     * seen from afar (the street). Every real light costs every lit surface a
+     * little work each frame, whether it's bright or not, so they're kept for
+     * lamps whose light you'd actually see land on things.
+     */
+    light?: boolean;
 };
 
 /**
@@ -26,7 +33,13 @@ type Props = {
  * runtime forces every material to recompile, a visible hitch. Dimming to 0
  * keeps the light count constant, so nothing recompiles.
  */
-export function Lamp({ position, intensity, color = '#ffd39a', bulbRadius = 0.12 }: Props) {
+export function Lamp({
+    position,
+    intensity,
+    color = '#ffd39a',
+    bulbRadius = 0.12,
+    light: lit = true,
+}: Props) {
     const light = useRef<PointLight>(null);
     const bulb = useRef<MeshStandardMaterial>(null);
 
@@ -39,7 +52,7 @@ export function Lamp({ position, intensity, color = '#ffd39a', bulbRadius = 0.12
 
     return (
         <group position={position}>
-            <pointLight ref={light} color={color} intensity={0} decay={2} />
+            {lit && <pointLight ref={light} color={color} intensity={0} decay={2} />}
             {bulbRadius > 0 && (
                 <mesh>
                     <sphereGeometry args={[bulbRadius, 16, 12]} />

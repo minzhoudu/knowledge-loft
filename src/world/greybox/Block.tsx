@@ -1,7 +1,9 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
+import type { Mesh } from 'three';
 import { useIsFocused } from '@/world/interaction/Interactable';
+import { ceilings } from '@/world/map/ceilings';
 import { plainProps, surfaceProps, worldBox, type Surface } from '@/world/materials/surfaces';
 
 type Vec3 = [number, number, number];
@@ -34,10 +36,21 @@ export function Block({ size, position, surface = 'wood', color, rotationY = 0 }
         [w, h, d, x, y, z, rotationY],
     );
     useEffect(() => () => geometry.dispose(), [geometry]);
+    // Ceilings register so the map view can hide them (see map/ceilings.ts).
+    const mesh = useRef<Mesh>(null);
+    useEffect(() => {
+        const m = mesh.current;
+        if (surface !== 'ceiling' || !m) return;
+        ceilings.add(m);
+        return () => {
+            ceilings.delete(m);
+        };
+    }, [surface]);
     const look = color ? plainProps(color) : surfaceProps(surface);
 
     return (
         <mesh
+            ref={mesh}
             geometry={geometry}
             position={position}
             rotation-y={rotationY}

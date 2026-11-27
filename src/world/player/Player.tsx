@@ -17,6 +17,12 @@ const EYE_OFFSET = 0.85; // body centre sits 0.8 m up, so eyes end up at ~1.65 m
 const GROUND_PROBE = 3; // metres: how far below the spawn point we look for a floor
 const FELL_OUT = -10; // below this height you've fallen out of the world
 
+/** Hooks other systems can call on the player (filled in while Player is mounted). */
+export const playerControl = {
+    /** Put the body at (x, z) on the floor, standing still. */
+    teleport: null as ((x: number, z: number) => void) | null,
+};
+
 /**
  * First-person player.
  *
@@ -53,6 +59,19 @@ export function Player() {
         camera.rotation.order = 'YXZ'; // yaw (Y) first, then pitch (X): standard for FPS cameras
         camera.rotation.set(0, MARKERS.spawn.yaw, 0);
     }, [get]);
+
+    // Lets the map view move the body to another room (see map/MapCamera).
+    useEffect(() => {
+        playerControl.teleport = (x, z) => {
+            const b = body.current;
+            if (!b) return;
+            b.setTranslation({ x, y: MARKERS.spawn.position[1], z }, true);
+            b.setLinvel({ x: 0, y: 0, z: 0 }, true);
+        };
+        return () => {
+            playerControl.teleport = null;
+        };
+    }, []);
 
     // Dev-only: __teleport(x, z, yaw) from the console, for checking far-away rooms.
     useEffect(() => {
@@ -120,8 +139,10 @@ export function Player() {
             b.setLinvel({ x: tmp.move.x, y: v.y, z: tmp.move.z }, true);
         }
 
-        // Sitting at a screen: SeatCamera moves the camera instead (the body stays put).
-        if (useWorld.getState().seat) return;
+        // Sitting at a screen or looking at the map: SeatCamera or MapCamera moves
+        // the camera instead (the body stays put).
+        const w = useWorld.getState();
+        if (w.seat || w.mapPhase) return;
         camera.position.set(p.x, p.y + EYE_OFFSET, p.z);
     });
 

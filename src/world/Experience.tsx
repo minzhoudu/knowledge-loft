@@ -8,6 +8,9 @@ import { Hud } from '@/ui/Hud';
 import { Ambience } from '@/world/audio/Ambience';
 import { InteractionSystem } from '@/world/interaction/InteractionSystem';
 import { Lighting } from '@/world/Lighting';
+import { MapCamera } from '@/world/map/MapCamera';
+import { MapOverlay } from '@/world/map/MapOverlay';
+import { Outside } from '@/world/outside/Outside';
 import { PostEffects } from '@/world/PostEffects';
 import { DragLook } from '@/world/player/DragLook';
 import { Player } from '@/world/player/Player';
@@ -63,6 +66,9 @@ export default function Experience() {
                 </Suspense>
                 <SeatCamera />
                 <CarriedBook />
+                <Outside />
+                <MapCamera />
+                <MapOverlay />
                 <InteractionSystem />
                 <Ambience />
                 <DragLook />
