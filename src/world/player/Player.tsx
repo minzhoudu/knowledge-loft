@@ -92,9 +92,9 @@ export function Player() {
         const left = held('left');
         const right = held('right');
         const run = held('run');
-        // Inside the constellation you stand still and only look around.
-        const exploring =
-            useWorld.getState().mode === 'exploring' && !useWorld.getState().constellation;
+        // Inside the constellation or at the bookshelf you stand still and only look around.
+        const w = useWorld.getState();
+        const exploring = w.mode === 'exploring' && !w.constellation && !w.shelf;
 
         // Input direction in "camera space": -z is forward, +x is right.
         // Keys give digital -1/0/1 per axis; the joystick adds an analog -1..1.
@@ -141,11 +141,10 @@ export function Player() {
             b.setLinvel({ x: tmp.move.x, y: v.y, z: tmp.move.z }, true);
         }
 
-        // Sitting at a screen, looking at the map or inside the constellation:
-        // SeatCamera, MapCamera or ConstellationCamera moves the camera instead
-        // (the body stays put).
-        const w = useWorld.getState();
-        if (w.seat || w.mapPhase || w.constellation) return;
+        // Sitting at a screen, looking at the map, inside the constellation or
+        // at the bookshelf: SeatCamera, MapCamera, ConstellationCamera or
+        // ShelfCamera moves the camera instead (the body stays put).
+        if (w.seat || w.mapPhase || w.constellation || w.shelf) return;
         camera.position.set(p.x, p.y + EYE_OFFSET, p.z);
     });
 

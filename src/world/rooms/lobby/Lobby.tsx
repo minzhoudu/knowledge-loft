@@ -12,6 +12,7 @@ import { Label } from '@/world/greybox/Label';
 import { Lamp } from '@/world/environment/Lamp';
 import { Interactable } from '@/world/interaction/Interactable';
 import { Bookshelf } from '@/world/bookshelf/Bookshelf';
+import { SHELF_POSITION } from '@/world/bookshelf/browse';
 import { Model } from '@/world/models/Model';
 import { SeatScreen } from '@/world/seats/SeatScreen';
 import { DOORS, MARKERS, ROOM, WINDOW } from './layout';
@@ -326,9 +327,9 @@ function Models() {
             </Interactable>
 
             {/* steel-frame bookshelf against the brick: the knowledge base. Every book
-                is a note (src/content/notes); aim at one and take it to read. */}
-            <Model name="steel-shelves" position={[sx, 0, -Z + 0.38]} />
-            <Bookshelf position={[sx, 0, -Z + 0.38]} />
+                is a note (src/content/notes); step up to the shelf, then take one to read. */}
+            <Model name="steel-shelves" position={SHELF_POSITION} />
+            <Bookshelf />
             <Model name="vase" position={[sx - 0.75, SHELF_TOP, -Z + 0.36]} collider={false} />
 
             {/* an arcade cabinet against the west wall, playing its own demo until you step up */}

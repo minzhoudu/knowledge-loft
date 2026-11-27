@@ -51,8 +51,9 @@ export function InteractionSystem() {
     }, []);
 
     useFrame(() => {
-        const { mode, focused, setFocused, constellation } = useWorld.getState();
-        if (mode !== 'exploring') {
+        const { mode, focused, setFocused, constellation, shelf } = useWorld.getState();
+        // Gliding up to the shelf or back from it, nothing answers.
+        if (mode !== 'exploring' || shelf === 'arriving' || shelf === 'leaving') {
             if (focused) setFocused(null);
             return;
         }
@@ -60,9 +61,15 @@ export function InteractionSystem() {
         raycaster.setFromCamera(CENTER, camera);
         // Inside the constellation only its stars count: the room is still
         // there behind the dark, and a bookshelf you can't see mustn't answer.
+        // At the bookshelf only its books count. Walking around, the books
+        // don't: the shelf as a whole answers instead (step up to it first).
+        const only = (prefix: string) =>
+            [...interactables].filter(([id]) => id.startsWith(prefix)).map(([, g]) => g);
         const targets = constellation
-            ? [...interactables].filter(([id]) => id.startsWith('skill:')).map(([, g]) => g)
-            : [...interactables.values()];
+            ? only('skill:')
+            : shelf
+              ? only('book:')
+              : [...interactables].filter(([id]) => !id.startsWith('book:')).map(([, g]) => g);
         const hit = pick(raycaster.intersectObjects(targets, true), raycaster);
 
         let next: typeof focused = null;

@@ -25,7 +25,7 @@ const ROWS: Row[] = [
 const HOME: Record<NoteKind, string> = { note: 'left-eye', case: 'right-eye', til: 'right-top' };
 
 /** Spines line up this far behind the boards' front edge (z ≈ 0.33). */
-const SPINE_Z = 0.29;
+export const SPINE_Z = 0.29;
 const GAP = 0.004;
 const MARGIN = 0.05; // from the post where a row starts
 
