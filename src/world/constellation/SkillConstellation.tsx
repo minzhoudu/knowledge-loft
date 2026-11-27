@@ -14,11 +14,11 @@ import {
     type LineSegments,
     type SpriteMaterial,
 } from 'three';
-import type { SkillCategory } from '@/content';
 import { useWorld } from '@/store/world';
 import { Interactable } from '@/world/interaction/Interactable';
 import { surfaceProps } from '@/world/materials/surfaces';
 import { MARKERS } from '@/world/rooms/lobby/layout';
+import { SKILL_COLORS } from './colors';
 import { ORDER } from './DarkRoom';
 import { blend, INSIDE, insidePositions, OUTSIDE, outsidePositions } from './immersion';
 import { constellation, neighbours, strongest } from './layout';
@@ -50,17 +50,7 @@ const N = stars.length;
 const [CX, , CZ] = MARKERS.constellation.position;
 const SPIN = 0.035; // radians per second: a slow drift, so it feels alive
 
-const CATEGORY_COLOR: Record<SkillCategory, string> = {
-    language: '#f2c14e',
-    frontend: '#5ec8f2',
-    backend: '#7ee08a',
-    data: '#c79bff',
-    devops: '#ff9f6b',
-    ai: '#ff6fa8',
-    commerce: '#9ad1c3',
-};
-
-const baseColor = stars.map((s) => new Color(CATEGORY_COLOR[s.category]));
+const baseColor = stars.map((s) => new Color(SKILL_COLORS[s.category]));
 const size = stars.map((s) => 0.024 + 0.014 * Math.sqrt(s.uses));
 
 // Link geometry: two points per link, and a colour per point (both updated per frame).
