@@ -46,7 +46,7 @@ import { machine, pad } from './machine';
 const BODY = '#17181c';
 const TRIM = '#f08c2e';
 
-const { position, rotationY } = MARKERS.centrepiece;
+const { position, rotationY } = MARKERS.arcade;
 
 export function ArcadeCabinet() {
     const focused = useIsFocused();

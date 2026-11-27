@@ -22,6 +22,13 @@ re-encoded, and some parts removed or re-materialed (each model's `fix` in the s
 | `vase.glb`               | [ceramic_vase_01](https://polyhaven.com/a/ceramic_vase_01) (Poly Haven)                                                        | CC0       |
 | `industrial-pendant.glb` | [hanging_industrial_lamp](https://polyhaven.com/a/hanging_industrial_lamp) (Poly Haven)                                        | CC0       |
 | `stool.glb`              | [metal_stool_02](https://polyhaven.com/a/metal_stool_02) (Poly Haven)                                                          | CC0       |
+| `tyre.glb`               | [old_tyre](https://polyhaven.com/a/old_tyre) (Poly Haven)                                                                      | CC0       |
+| `tyre-pump.glb`          | [tire_pump](https://polyhaven.com/a/tire_pump) (Poly Haven)                                                                    | CC0       |
+| `barber-chair.glb`       | [BarberShopChair_01](https://polyhaven.com/a/BarberShopChair_01) (Poly Haven)                                                  | CC0       |
+| `led-bulb.glb`           | [lightbulb_led](https://polyhaven.com/a/lightbulb_led) (Poly Haven)                                                            | CC0       |
+| `security-camera.glb`    | [security_camera_01](https://polyhaven.com/a/security_camera_01) (Poly Haven)                                                  | CC0       |
+| `compass.glb`            | [seadogs_compass](https://polyhaven.com/a/seadogs_compass) (Poly Haven)                                                        | CC0       |
+| `suitcase.glb`           | [vintage_suitcase](https://polyhaven.com/a/vintage_suitcase) (Poly Haven)                                                      | CC0       |
 | `clock.glb`              | [wall_clock](https://polyhaven.com/a/wall_clock) (Poly Haven)                                                                  | CC0       |
 | `wall-lamp.glb`          | [industrial_wall_lamp](https://polyhaven.com/a/industrial_wall_lamp) (Poly Haven)                                              | CC0       |
 | `round-table.glb`        | [coffee_table_round_01](https://polyhaven.com/a/coffee_table_round_01) (Poly Haven)                                            | CC0       |
@@ -37,4 +44,9 @@ re-encoded, and some parts removed or re-materialed (each model's `fix` in the s
 | `turntable.glb`          | [Yamaha TT-300 Record Player](https://sketchfab.com/3d-models/3577a2a1a0c24218bd5d768beccf218e) by AleixoAlonso                | CC BY 4.0 |
 | `scuba-mask.glb`         | [Scuba Goggles And Snorkel](https://sketchfab.com/3d-models/6552ed7809cb4eaca6fd3c987165adbb) by milansaman21                  | CC BY 4.0 |
 | `floor-lamp.glb`         | [floor lamp](https://sketchfab.com/3d-models/floor-lamp-7044aedec91b4e28916a20b0ce026217) by Jack John                         | CC BY 4.0 |
+| `padlock.glb`            | [Padlock & Key](https://sketchfab.com/3d-models/745c1c723d26498e9681cc0d7d065b3c) by tediuminteractive                         | CC BY 4.0 |
+| `solar-panel.glb`        | [Solar Panel](https://sketchfab.com/3d-models/83483a66f8974d7e8f2e7bbde518d606) by Harri Snellman                              | CC BY 4.0 |
+| `terrarium.glb`          | [Forest In a Jar - Terrarium](https://sketchfab.com/3d-models/4dca1b2513394d0fa0ed12041ff30ddc) by hectopod                    | CC BY 4.0 |
+| `perfume.glb`            | [Perfume Bottle](https://sketchfab.com/3d-models/31303f93f4ec4da796180aa751885a1d) by Michaela Blanchfield                     | CC BY 4.0 |
+| `spray-bottle.glb`       | [Spray Bottle](https://sketchfab.com/3d-models/1611833f3eaa41bbba2b6944269429ab) by Anthony Yanez                              | CC BY 4.0 |
 | `monstera.glb`           | [Monstera Deliciosa Potted Mid-Century plant](https://sketchfab.com/3d-models/1ab9bf841df04c07b1819be596327629) by ChubbyPanda | CC BY 4.0 |

@@ -3,7 +3,7 @@ import { MARKERS } from '@/world/rooms/lobby/layout';
 /**
  * The arcade cabinet's shape, in its own frame: metres, the floor at y = 0,
  * the player side toward +z, centred on x. Lobby.tsx stands it at
- * MARKERS.centrepiece, turned by its rotationY.
+ * MARKERS.arcade, turned by its rotationY.
  *
  * The whole body is one side profile, a polygon in the (z, y) plane, pushed
  * out sideways (extruded) to the cabinet's width. That's how real cabinets
@@ -88,7 +88,7 @@ export const GLASS = { width: 0.375, height: 0.5 };
 /** Pixels of the game, drawn 1:1 into a canvas (see game.ts). */
 export const PIXELS = { width: 240, height: 320 };
 
-const { position: at, rotationY } = MARKERS.centrepiece;
+const { position: at, rotationY } = MARKERS.arcade;
 
 /** The glass in the world, for the seat that frames it (see seats.ts). */
 export const ARCADE_SCREEN = {

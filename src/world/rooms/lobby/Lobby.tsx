@@ -330,7 +330,7 @@ function Models() {
             <Bookshelf position={[sx, 0, -Z + 0.38]} />
             <Model name="vase" position={[sx - 0.75, SHELF_TOP, -Z + 0.36]} collider={false} />
 
-            {/* the centrepiece: an arcade cabinet, playing its own demo until you step up */}
+            {/* an arcade cabinet against the west wall, playing its own demo until you step up */}
             <Interactable
                 id="lobby-arcade"
                 label="Arcade · Puncture Run"

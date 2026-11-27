@@ -30,11 +30,14 @@ type Vec3 = [number, number, number];
 
 export const MARKERS = {
     spawn: { position: [4.8, 1, 0.4] as Vec3, yaw: 0.93 },
+    /** Open floor under the first pendant lamp, kept free for a lobby centrepiece (to be decided). */
+    centrepiece: { position: [-1.4, 0, 0.6] as Vec3 },
     /**
-     * Open floor under the first pendant lamp: the arcade cabinet stands here,
-     * turned to face +x, toward the entrance, so its screen is the first thing you see.
+     * The arcade cabinet: back to the west wall, between the desk corner and
+     * the Projects door, its screen turned (+x) toward the entrance. The
+     * cabinet's back is 0.42 m behind its origin (see arcade/cabinet.ts).
      */
-    centrepiece: { position: [-1.4, 0, 0.6] as Vec3, rotationY: Math.PI / 2 },
+    arcade: { position: [-6.55, 0, -0.3] as Vec3, rotationY: Math.PI / 2 },
     desk: { position: [-4.3, 0, -4.05] as Vec3 },
     shelf: { position: [1.6, 0, -4.79] as Vec3 },
     /** The Career wall display's bezel (2.36 x 1.38 m, 5 cm deep) on the brick wall. */

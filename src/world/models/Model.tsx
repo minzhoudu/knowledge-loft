@@ -1,17 +1,22 @@
 'use client';
 
 import { useGLTF } from '@react-three/drei';
+import { useFrame } from '@react-three/fiber';
 import { CuboidCollider, RigidBody } from '@react-three/rapier';
 import { Suspense, useEffect, useMemo, useRef } from 'react';
-import { Box3, Mesh, Vector3, type Group, type MeshStandardMaterial } from 'three';
+import { Box3, Color, Mesh, Vector3, type Group, type MeshStandardMaterial } from 'three';
 import { useIsFocused } from '@/world/interaction/Interactable';
+import type { RoomId } from '@/world/rooms/zones';
+import { lightsTarget } from '@/world/switches/state';
 
 /** Files in public/models, built by `pnpm models` (scripts/build-models.mjs). */
 export type ModelName =
     | 'armchair'
+    | 'barber-chair'
     | 'books'
     | 'clock'
     | 'coffee-table'
+    | 'compass'
     | 'cube-shelves'
     | 'desk'
     | 'desk-lamp'
@@ -19,23 +24,33 @@ export type ModelName =
     | 'gaming-pc'
     | 'industrial-pendant'
     | 'laptop'
+    | 'led-bulb'
     | 'lounge-chair'
     | 'monstera'
     | 'ottoman'
+    | 'padlock'
     | 'pendant'
+    | 'perfume'
     | 'pillows'
     | 'plant-pot'
     | 'plant-tall'
     | 'ray'
     | 'round-table'
     | 'scuba-mask'
+    | 'security-camera'
     | 'shark'
     | 'shell'
     | 'sofa'
+    | 'solar-panel'
+    | 'spray-bottle'
     | 'steel-shelves'
     | 'stool'
     | 'street-lamp'
+    | 'suitcase'
+    | 'terrarium'
     | 'turntable'
+    | 'tyre'
+    | 'tyre-pump'
     | 'vase'
     | 'wall-lamp';
 
@@ -58,7 +73,16 @@ type Props = {
      * every caster is drawn a second time in the shadow pass).
      */
     castShadow?: boolean;
+    /**
+     * A light fitting: its glass (any material named like "glass") glows
+     * whenever this room's lights are on, following the room's switch.
+     */
+    glowsWith?: RoomId;
 };
+
+/** The warm glow of a lit bulb behind glass. */
+const BULB = new Color('#ffd39a');
+const isGlass = (m: { name: string }) => /glass/i.test(m.name);
 
 /**
  * A model from public/models, placed in the world.
@@ -84,6 +108,7 @@ function LoadedModel({
     scale = 1,
     collider = true,
     castShadow = collider,
+    glowsWith,
 }: Props) {
     // Draco off (our files don't use it, so drei won't fetch its decoder),
     // meshopt on (the build script compresses with it).
@@ -128,11 +153,32 @@ function LoadedModel({
 
     useEffect(() => {
         group.current?.traverse((o) => {
-            if (o instanceof Mesh) {
-                (o.material as MeshStandardMaterial).emissiveIntensity = focused ? 0.3 : 0;
+            if (!(o instanceof Mesh)) return;
+            const m = o.material as MeshStandardMaterial;
+            if (glowsWith && isGlass(m)) {
+                m.emissive.copy(BULB);
+                m.emissiveMap = null; // glow evenly, not in the texture's pattern
+            } else {
+                m.emissiveIntensity = focused ? 0.3 : 0;
             }
         });
-    }, [focused]);
+    }, [focused, glowsWith]);
+
+    // A light fitting's glass glows with the room's lights, eased like its lamps (see Lamp).
+    const lit = useRef(-1);
+    useFrame((_, delta) => {
+        if (!glowsWith || !group.current) return;
+        const target = lightsTarget(glowsWith);
+        lit.current =
+            lit.current < 0
+                ? target
+                : lit.current + (target - lit.current) * (1 - Math.exp(-12 * Math.min(delta, 0.1)));
+        // Above 1 so the bloom pass picks it up: a lit bulb glares a little.
+        const glow = 2.4 * lit.current;
+        group.current.traverse((o) => {
+            if (o instanceof Mesh && isGlass(o.material)) o.material.emissiveIntensity = glow;
+        });
+    });
 
     const visual = (
         <group ref={group} scale={scale}>

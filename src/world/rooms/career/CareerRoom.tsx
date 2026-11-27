@@ -19,13 +19,19 @@ const CX = (x0 + x1) / 2;
 const CZ = (z0 + z1) / 2;
 const W = x1 - x0;
 const L = z1 - z0;
-const LIGHT_COUNT = Math.max(2, Math.round(L / 6));
 
 /**
  * Greybox Career corridor: a walk back through time. Each role is a station
  * on the wall with a year marker on the floor, joined by a timeline line
  * down the middle. Stations, length and lights all come from content.
+ *
+ * It has no windows; the light comes from the wall lamps, one opposite each
+ * station: each is a real light, with its glass glowing, so you can see
+ * where the light comes from. They follow the corridor's switch.
  */
+
+/** The wall lamp's glass: its centre above the lamp's base, and how far a light sits off the wall. */
+const SCONCE = { glassY: 0.215, out: 0.2 };
 export function CareerRoom() {
     return (
         <group>
@@ -93,17 +99,32 @@ export function CareerRoom() {
             />
             {/* a clock above the sign at the far end: it's what you hear ticking */}
             <Model name="clock" position={[CX, 3.12, z0 + 0.04]} scale={1.6} collider={false} />
-            {/* bulkhead lamps on the wall opposite each station */}
+            {/* industrial wall lamps on the wall opposite each station, lighting it */}
             {STATIONS.map(({ company, position: [, , z], side }) => {
                 const east = side === 'west';
                 return (
-                    <Model
-                        key={company.slug}
-                        name="wall-lamp"
-                        position={[east ? x1 - 0.07 : x0 + 0.07, 1.9, z]}
-                        rotationY={east ? -Math.PI / 2 : Math.PI / 2}
-                        collider={false}
-                    />
+                    <group key={company.slug}>
+                        <Model
+                            name="wall-lamp"
+                            position={[east ? x1 - 0.07 : x0 + 0.07, 1.9, z]}
+                            rotationY={east ? -Math.PI / 2 : Math.PI / 2}
+                            collider={false}
+                            glowsWith="career"
+                        />
+                        {/* the light itself: just in front of the glass, so it washes the
+                            wall around the lamp and reaches the station across the corridor */}
+                        <Lamp
+                            room="career"
+                            position={[
+                                east ? x1 - SCONCE.out : x0 + SCONCE.out,
+                                1.9 + SCONCE.glassY,
+                                z,
+                            ]}
+                            intensity={6}
+                            color="#ffd39a"
+                            bulbRadius={0}
+                        />
+                    </group>
                 );
             })}
             <Model name="plant-tall" position={[x0 + 0.45, 0, z0 + 0.45]} />
@@ -114,20 +135,6 @@ export function CareerRoom() {
                 position={[DOOR.center, DOOR.height + 0.35, z1 - 0.01]}
                 rotationY={Math.PI}
             />
-
-            {/* ceiling lights every ~6 m: the corridor has no windows */}
-            {Array.from({ length: LIGHT_COUNT }, (_, i) => {
-                const z = z1 - ((i + 0.5) * L) / LIGHT_COUNT;
-                return (
-                    <Lamp
-                        key={i}
-                        room="career"
-                        position={[CX, H - 0.6, z]}
-                        intensity={12}
-                        bulbRadius={0}
-                    />
-                );
-            })}
         </group>
     );
 }

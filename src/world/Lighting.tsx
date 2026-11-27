@@ -44,6 +44,12 @@ const EXPOSURE_NIGHT = 1.25;
 const EXPOSURE_DAY = 1.0;
 /** How much of the daylight closed blinds keep out of the room you're in. */
 const BLINDS_BLOCK = 0.7;
+/**
+ * How much daylight reaches a room with no windows: a little, through the
+ * doorway. Its lamps set its colour, so a lamplit corridor stays warm.
+ */
+const WINDOWLESS_DAYLIGHT = 0.12;
+const WINDOWLESS = new Set(['projects', 'career']);
 
 // Palette. The render loop blends between these.
 const C = {
@@ -81,7 +87,7 @@ const sky = createSkyMaterial();
 const lightDir = new Vector3();
 const groundTarget = new Color();
 const ground = { snowCover: 0 }; // 0..1, how much snow has settled on the ground
-const shade = { value: 0 }; // how shaded the room you're in is by its blinds, eased
+const reach = { value: 1 }; // how much daylight reaches the room you're in, 0..1, eased
 
 /** Moves `value` toward `target` by a frame-rate-independent fraction. */
 function ease(value: number, target: number, rate: number, delta: number) {
@@ -201,17 +207,27 @@ export function Lighting() {
         light.position.copy(CENTER).addScaledVector(lightDir, LIGHT_DISTANCE);
 
         // 4c. Ambient: bright blue-white by day, dim blue at night, a bit flatter when overcast.
-        // Ambient light has no position, so it can't be blocked by blinds the way
-        // the sun is (by their shadow). Instead it follows the room you're in:
-        // the further its blinds are down, the less daylight reaches you.
+        // Ambient light has no position, so walls and blinds can't block it the
+        // way they block the sun (by shadow). Instead it follows the room you're
+        // in: how much daylight gets in there. A room with windows gets it all,
+        // less the further its blinds are down; a windowless room only a little,
+        // so its own lamps decide its colour. Eased, so walking through a door
+        // feels like stepping into a different light, not a switch.
         const room = roomAt(camera.position.x, camera.position.z);
-        shade.value = ease(shade.value, room ? blindDrop[room] : 0, 4, delta);
-        const open = 1 - BLINDS_BLOCK * shade.value * day;
+        const daylightIn = !room
+            ? 1
+            : WINDOWLESS.has(room)
+              ? WINDOWLESS_DAYLIGHT
+              : 1 - BLINDS_BLOCK * blindDrop[room];
+        reach.value = ease(reach.value, daylightIn, 2.5, delta);
+        const open = 1 - (1 - reach.value) * day; // at night there's no daylight to keep out
         amb.color.lerpColors(C.hemiSkyNight, C.hemiSkyDay, day);
         amb.groundColor.lerpColors(C.hemiGroundNight, C.hemiGroundDay, day);
         amb.intensity = (0.35 + 1.4 * day) * (1 - 0.2 * cloud) * open;
         scene.environmentIntensity = ENV_INTENSITY * open; // the sky's reflections, too
-        gl.toneMappingExposure = EXPOSURE_NIGHT + (EXPOSURE_DAY - EXPOSURE_NIGHT) * day;
+        // Exposure follows the daylight you're actually in: a dim room lets your
+        // eyes open up again, so the corridor isn't murky at noon.
+        gl.toneMappingExposure = EXPOSURE_NIGHT + (EXPOSURE_DAY - EXPOSURE_NIGHT) * day * open;
 
         // 4d. Fog matches the horizon, so the far ground melts into the sky.
         // Rain and snow pull it closer, like real murky weather.

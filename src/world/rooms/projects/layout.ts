@@ -33,7 +33,8 @@ export type ExhibitSlot = {
 };
 
 /** Exhibits along each long wall, from the door end to the far end. */
-const ROW_X = [-8.9, -11.8, -14.8, -17.7];
+/** Five pairs, 2.3 m apart: room for each 1.5 m plaque with a gap between. */
+const ROW_X = [-8.7, -11.0, -13.3, -15.6, -17.9];
 const ROW_INSET = 0.9; // distance of plinths from the wall
 
 /**

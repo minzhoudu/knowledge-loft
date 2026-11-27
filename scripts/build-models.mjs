@@ -70,6 +70,14 @@ const MODELS = [
     // projects gallery
     { name: 'industrial-pendant', id: 'hanging_industrial_lamp', tex: 512 },
     { name: 'stool', id: 'metal_stool_02', tex: 512 },
+    // ...its exhibits: one object per project (see ProjectsRoom's EXHIBITS)
+    { name: 'tyre', id: 'old_tyre', tex: 1024 },
+    { name: 'tyre-pump', id: 'tire_pump', tex: 512 },
+    { name: 'barber-chair', id: 'BarberShopChair_01', tex: 1024 },
+    { name: 'led-bulb', id: 'lightbulb_led', tex: 512 },
+    { name: 'security-camera', id: 'security_camera_01', tex: 512 },
+    { name: 'compass', id: 'seadogs_compass', tex: 512 },
+    { name: 'suitcase', id: 'vintage_suitcase', tex: 1024 },
     // career corridor
     { name: 'clock', id: 'wall_clock', tex: 512 },
     { name: 'wall-lamp', id: 'industrial_wall_lamp', tex: 512 },
@@ -154,6 +162,69 @@ const MODELS = [
         url: 'https://sketchfab.com/3d-models/floor-lamp-7044aedec91b4e28916a20b0ce026217',
         tex: 512,
         palette: true, // six plain-coloured materials, no textures
+    },
+    {
+        name: 'padlock',
+        file: 'padlock__key.glb',
+        title: 'Padlock & Key',
+        author: 'tediuminteractive',
+        url: 'https://sketchfab.com/3d-models/745c1c723d26498e9681cc0d7d065b3c',
+        tex: 512,
+        scale: 0.001, // modelled in millimetres
+    },
+    {
+        name: 'solar-panel',
+        file: 'solar_panel.glb',
+        title: 'Solar Panel',
+        author: 'Harri Snellman',
+        url: 'https://sketchfab.com/3d-models/83483a66f8974d7e8f2e7bbde518d606',
+        tex: 512,
+        scale: 0.01, // modelled in centimetres
+        fix: (doc) => removeExtension(doc, 'KHR_materials_specular'),
+    },
+    {
+        name: 'terrarium',
+        file: 'forest_in_a_jar_-_terrarium.glb',
+        title: 'Forest In a Jar - Terrarium',
+        author: 'hectopod',
+        url: 'https://sketchfab.com/3d-models/4dca1b2513394d0fa0ed12041ff30ddc',
+        tex: 512,
+        scale: 0.1, // modelled in decimetres
+        simplify: 0.5,
+        error: 0.005,
+    },
+    {
+        name: 'perfume',
+        file: 'perfume_bottle.glb',
+        title: 'Perfume Bottle',
+        author: 'Michaela Blanchfield',
+        url: 'https://sketchfab.com/3d-models/31303f93f4ec4da796180aa751885a1d',
+        tex: 512,
+        simplify: 0.35,
+        error: 0.004,
+        // Its glass is a "transmission" material, which costs three.js an extra
+        // render of the whole scene every frame. Plain see-through glass instead.
+        fix: (doc) => {
+            for (const m of doc.getRoot().listMaterials()) {
+                if (!m.getExtension('KHR_materials_transmission')) continue;
+                const [r, g, b] = m.getBaseColorFactor();
+                m.setAlphaMode('BLEND')
+                    .setBaseColorFactor([r, g, b, 0.35])
+                    .setRoughnessFactor(0.05)
+                    .setMetallicFactor(0);
+            }
+            removeExtension(doc, 'KHR_materials_transmission');
+            removeExtension(doc, 'KHR_materials_specular');
+        },
+    },
+    {
+        name: 'spray-bottle',
+        file: 'spray_bottle.glb',
+        title: 'Spray Bottle',
+        author: 'Anthony Yanez',
+        url: 'https://sketchfab.com/3d-models/1611833f3eaa41bbba2b6944269429ab',
+        tex: 512,
+        scale: 0.1, // modelled in decimetres
     },
     {
         name: 'monstera',

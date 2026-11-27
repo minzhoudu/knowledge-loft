@@ -8,6 +8,7 @@ import { GithubWall } from '@/world/github/GithubWall';
 import { Interactable } from '@/world/interaction/Interactable';
 import { Lamp } from '@/world/environment/Lamp';
 import { Model } from '@/world/models/Model';
+import { DISPLAYS, FeaturedDisplay, Plaque, PLINTH, Vitrine } from './exhibits';
 import { CENTER, DOOR, layoutExhibits, ROOM, type ExhibitSlot } from './layout';
 
 const { x0, x1, z0, z1, height: H, wall: T } = ROOM;
@@ -62,17 +63,20 @@ export function ProjectsRoom() {
                 ))}
             </RigidBody>
 
-            {/* labels: no physics */}
-            {slots.map(({ project, position: [x, , z], rotationY }) => (
-                <group key={project.slug} position={[x, 0, z]} rotation-y={rotationY}>
-                    <Label
-                        title={project.title}
-                        subtitle={String(project.year)}
-                        width={1.5}
-                        position={[0, 2.0, PLAQUE_Z + 0.04]}
-                    />
+            {/* glass cases and their contents: no auto colliders (the plinths have them) */}
+            {slots.map(({ project, position, rotationY }) => (
+                <group key={project.slug} position={position} rotation-y={rotationY}>
+                    <group position-y={PLINTH.height}>
+                        <Vitrine />
+                        {DISPLAYS[project.slug]?.items}
+                    </group>
                 </group>
             ))}
+            {featured && (
+                <group position={[CENTER.x, 0, CENTER.z]} rotation-y={Math.PI / 2}>
+                    <FeaturedDisplay top={PODIUM.top} base={PODIUM.base} />
+                </group>
+            )}
             {featured && (
                 <Label
                     title={featured.title}
@@ -127,7 +131,11 @@ export function ProjectsRoom() {
     );
 }
 
-/** A wall exhibit: plinth with a stand-in object, and a panel on the wall behind it. */
+/**
+ * A wall exhibit: a plinth and the plaque on the wall behind it. This part is inside the room's rigid body,
+ * so the plinth gets a collider; the glass case and its contents are added
+ * outside it (see above), where they don't.
+ */
 function Exhibit({ slot }: { slot: ExhibitSlot }) {
     const { project, position, rotationY } = slot;
     return (
@@ -137,13 +145,19 @@ function Exhibit({ slot }: { slot: ExhibitSlot }) {
                 label={`Exhibit · ${project.title}`}
                 action={{ kind: 'panel', panel: { kind: 'project', slug: project.slug } }}
             >
-                <Block size={[0.6, 1.0, 0.6]} position={[0, 0.5, 0]} surface="accent" />
-                <Block size={[0.35, 0.35, 0.35]} position={[0, 1.18, 0]} color="#e9d2b8" />
-                <Block size={[1.8, 1.2, 0.05]} position={[0, 2.0, PLAQUE_Z]} surface="accent" />
+                <Block
+                    size={[PLINTH.size, PLINTH.height, PLINTH.size]}
+                    position={[0, PLINTH.height / 2, 0]}
+                    surface="accent"
+                />
+                <Plaque project={project} position={[0, 1.95, PLAQUE_Z]} />
             </Interactable>
         </group>
     );
 }
+
+/** The featured podium's heights: its base step, and the top of the block on it. */
+const PODIUM = { base: 0.25, top: 1.15 };
 
 /** The featured project: a bigger podium in the middle of the room, facing the door. */
 function FeaturedPodium() {
@@ -157,7 +171,6 @@ function FeaturedPodium() {
             >
                 <Block size={[1.8, 0.25, 1.8]} position={[0, 0.125, 0]} surface="accent" />
                 <Block size={[0.9, 0.9, 0.9]} position={[0, 0.7, 0]} surface="accent" />
-                <Block size={[0.6, 0.6, 0.6]} position={[0, 1.45, 0]} color="#e9d2b8" />
             </Interactable>
         </group>
     );
