@@ -7,7 +7,7 @@ import { CanvasTexture, SRGBColorSpace, Vector3 } from 'three';
 import { useWorld, type SeatId } from '@/store/world';
 import { readableZoom } from '@/world/reading';
 import { Section } from '@/ui/sections';
-import { leaveLabel, SEATS, type IdleLine, type Seat } from './seats';
+import { SEATS, type IdleLine, type Seat } from './seats';
 
 /**
  * Every screen's page is laid out this many CSS px wide, then scaled to fit
@@ -35,10 +35,11 @@ const PAGE_WIDTH = 960;
 export function SeatScreen({ seat }: { seat: SeatId }) {
     const config = SEATS[seat];
     const { screen } = config;
+    const idle = config.page?.idle;
     const reading = useWorld((s) => s.seat === seat && s.seatPhase === 'seated');
     const texture = useMemo(
-        () => drawIdle(screen.width, screen.height, config.idle),
-        [screen, config.idle],
+        () => drawIdle(screen.width, screen.height, idle ?? []),
+        [screen, idle],
     );
     useEffect(() => () => texture.dispose(), [texture]);
 
@@ -56,7 +57,7 @@ export function SeatScreen({ seat }: { seat: SeatId }) {
                     emissiveIntensity={0.85}
                 />
             </mesh>
-            {reading && <ScreenPage seat={config} />}
+            {reading && config.page && <ScreenPage seat={config} page={config.page} />}
         </group>
     );
 }
@@ -64,8 +65,8 @@ export function SeatScreen({ seat }: { seat: SeatId }) {
 const left = new Vector3();
 const right = new Vector3();
 
-function ScreenPage({ seat }: { seat: Seat }) {
-    const { screen, page } = seat;
+function ScreenPage({ seat, page }: { seat: Seat; page: NonNullable<Seat['page']> }) {
+    const { screen } = seat;
     const get = useThree((s) => s.get);
     const size = useThree((s) => s.size);
     const pxPerMetre = PAGE_WIDTH / screen.width;
@@ -103,7 +104,7 @@ function ScreenPage({ seat }: { seat: Seat }) {
                         <span className="size-2.5 rounded-full bg-[#febc2e]" />
                         <span className="size-2.5 rounded-full bg-[#28c840]" />
                         <span className="ml-2">{page.title}</span>
-                        <span className="ml-auto">Esc · {leaveLabel(seat).toLowerCase()}</span>
+                        <span className="ml-auto">Esc · {seat.leave.toLowerCase()}</span>
                     </div>
                     <div
                         className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-8 py-6"

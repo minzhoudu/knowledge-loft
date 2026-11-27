@@ -1,6 +1,7 @@
 import { Matrix4, Quaternion, Vector3, type PerspectiveCamera } from 'three';
 import { about, companies } from '@/content';
 import type { SectionId, SeatId } from '@/store/world';
+import { ARCADE_SCREEN } from '@/world/arcade/cabinet';
 import { MARKERS } from '@/world/rooms/lobby/layout';
 
 type Vec3 = [number, number, number];
@@ -12,6 +13,8 @@ export type Screen = {
     rotationY: number;
     width: number;
     height: number;
+    /** How far it leans back to face upward, in radians (an arcade screen does). */
+    tiltUp?: number;
 };
 
 /** One line of a screen's idle picture (a terminal), styled by its role. */
@@ -26,10 +29,21 @@ export type Seat = {
     screen: Screen;
     /** Sitting dips the view on the way down; standing just steps up to it. */
     posture: 'sit' | 'stand';
-    /** What the screen shows while you're there. */
-    page: { title: string; section: SectionId };
-    /** What it shows the rest of the time, seen from across the room. */
-    idle: IdleLine[];
+    /** The prompt to use it, and to leave. */
+    verb: string;
+    leave: string;
+    /** Room around the screen in the view (1 = edge to edge). */
+    margin?: number;
+    /**
+     * A page to read on it (SeatScreen draws those). A seat without one draws
+     * its own screen, like the arcade cabinet's game.
+     */
+    page?: {
+        title: string;
+        section: SectionId;
+        /** What the screen shows the rest of the time, seen from across the room. */
+        idle: IdleLine[];
+    };
 };
 
 const desk = MARKERS.deskScreen;
@@ -42,42 +56,60 @@ export const SEATS: Record<SeatId, Seat> = {
     'lobby-desk': {
         screen: { center: desk.center, rotationY: 0, width: desk.width, height: desk.height },
         posture: 'sit',
-        page: { title: 'about.md', section: 'about' },
-        idle: [
-            { text: '~ $ whoami', tone: 'prompt' },
-            { text: about.name, tone: 'title' },
-            { text: about.headline, tone: 'muted' },
-            { text: '', tone: 'text' },
-            { text: '~ $ cat about.md', tone: 'prompt' },
-            { text: 'Take a seat to read it.', tone: 'muted' },
-        ],
+        verb: 'Sit down',
+        leave: 'Stand up',
+        page: {
+            title: 'about.md',
+            section: 'about',
+            idle: [
+                { text: '~ $ whoami', tone: 'prompt' },
+                { text: about.name, tone: 'title' },
+                { text: about.headline, tone: 'muted' },
+                { text: '', tone: 'text' },
+                { text: '~ $ cat about.md', tone: 'prompt' },
+                { text: 'Take a seat to read it.', tone: 'muted' },
+            ],
+        },
     },
     'lobby-career': {
         screen: { center: wall.center, rotationY: 0, width: wall.width, height: wall.height },
         posture: 'stand',
-        page: { title: 'career.md', section: 'career' },
-        idle: [
-            { text: '~ $ git log career --oneline', tone: 'prompt' },
-            ...companies.slice(0, 6).map((c) => ({
-                text: `${years(c.start, c.end).padEnd(11)} ${c.name} · ${c.role}`,
-                tone: 'text' as const,
-            })),
-            { text: '', tone: 'text' },
-            { text: 'Step up to the screen to read more.', tone: 'muted' },
-        ],
+        verb: 'Read',
+        leave: 'Step back',
+        page: {
+            title: 'career.md',
+            section: 'career',
+            idle: [
+                { text: '~ $ git log career --oneline', tone: 'prompt' },
+                ...companies.slice(0, 6).map((c) => ({
+                    text: `${years(c.start, c.end).padEnd(11)} ${c.name} · ${c.role}`,
+                    tone: 'text' as const,
+                })),
+                { text: '', tone: 'text' },
+                { text: 'Step up to the screen to read more.', tone: 'muted' },
+            ],
+        },
+    },
+    'lobby-arcade': {
+        screen: ARCADE_SCREEN,
+        posture: 'stand',
+        verb: 'Play',
+        leave: 'Step back',
+        // Further back than a page needs: the marquee and the joystick stay in view.
+        margin: 2.1,
     },
 };
 
-export const seatVerb = (seat: Seat) => (seat.posture === 'sit' ? 'Sit down' : 'Read');
-export const leaveLabel = (seat: Seat) => (seat.posture === 'sit' ? 'Stand up' : 'Step back');
-
-/** Room around the screen's edges in the seated view (1 = edge to edge). */
+/** Room around the screen's edges in the seated view (1 = edge to edge), unless a seat says otherwise. */
 const MARGIN = 1.22;
+/** Across the width, never more than this: on a phone held upright the screen should fill it. */
+const MAX_SIDE_MARGIN = 1.3;
 /** Never closer than this: a seated person sits ~50–70 cm from a monitor. */
 const MIN_DISTANCE = 0.5;
 
 const UP = new Vector3(0, 1, 0);
 const lookMatrix = new Matrix4();
+const target = new Vector3();
 
 /**
  * The camera pose that frames a screen: straight in front of it, as close
@@ -89,23 +121,36 @@ const lookMatrix = new Matrix4();
  * height H: d = H / (2·tan(fov/2)), and of width W: d = W / (2·tan(fov/2)·aspect).
  * The larger of the two wins. On a wide monitor the height decides; on a
  * phone held upright the width does, so the camera sits further back.
+ *
+ * "Straight in front" is along the screen's normal: for a screen that leans
+ * back (tiltUp), that's a little above it, looking down, the way you stand
+ * at an arcade cabinet.
  */
 export function seatedPose(
-    screen: Screen,
+    seat: Seat,
     camera: PerspectiveCamera,
     outPos: Vector3,
     outQuat: Quaternion,
 ) {
+    const { screen } = seat;
+    const margin = seat.margin ?? MARGIN;
     const tanHalf = Math.tan((camera.fov * Math.PI) / 360);
-    const fitHeight = (screen.height * MARGIN) / (2 * tanHalf);
-    const fitWidth = (screen.width * MARGIN) / (2 * tanHalf * camera.aspect);
+    const fitHeight = (screen.height * margin) / (2 * tanHalf);
+    const fitWidth =
+        (screen.width * Math.min(margin, MAX_SIDE_MARGIN)) / (2 * tanHalf * camera.aspect);
     const d = Math.max(fitHeight, fitWidth, MIN_DISTANCE);
 
     const [x, y, z] = screen.center;
-    // The screen's facing direction: +z turned by rotationY.
-    outPos.set(x + Math.sin(screen.rotationY) * d, y, z + Math.cos(screen.rotationY) * d);
+    // The screen's facing direction: +z turned by rotationY, tipped up by tiltUp.
+    const up = screen.tiltUp ?? 0;
+    const flat = Math.cos(up) * d;
+    outPos.set(
+        x + Math.sin(screen.rotationY) * flat,
+        y + Math.sin(up) * d,
+        z + Math.cos(screen.rotationY) * flat,
+    );
     // A camera looks down its own -z, and Matrix4.lookAt builds exactly that
     // rotation (eye → target), which we store as a quaternion.
-    lookMatrix.lookAt(outPos, new Vector3(x, y, z), UP);
+    lookMatrix.lookAt(outPos, target.set(x, y, z), UP);
     outQuat.setFromRotationMatrix(lookMatrix);
 }

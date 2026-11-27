@@ -60,7 +60,7 @@ export function SeatCamera() {
             rig.homeQuat.copy(camera.quaternion);
             rig.fromPos.copy(camera.position);
             rig.fromQuat.copy(camera.quaternion);
-            seatedPose(SEATS[seat].screen, camera as PerspectiveCamera, rig.toPos, rig.toQuat);
+            seatedPose(SEATS[seat], camera as PerspectiveCamera, rig.toPos, rig.toQuat);
         } else if (seatPhase === 'leaving' && rig.phase !== 'leaving') {
             // Also works when getting up halfway through sitting down.
             rig.phase = 'leaving';

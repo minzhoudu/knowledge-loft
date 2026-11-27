@@ -2,6 +2,7 @@
 
 import { CuboidCollider, RigidBody } from '@react-three/rapier';
 import { DoubleSide } from 'three';
+import { ArcadeCabinet } from '@/world/arcade/ArcadeCabinet';
 import { SkillConstellation } from '@/world/constellation/SkillConstellation';
 import { CurrentlyBoard } from '@/world/currently/CurrentlyBoard';
 import { Block } from '@/world/greybox/Block';
@@ -180,7 +181,7 @@ export function Lobby() {
 
             <WindowMullions />
 
-            {/* pendant lamps that come on at dusk: over the centrepiece spot, the desk and the lounge */}
+            {/* pendant lamps that come on at dusk: over the arcade, the desk and the lounge */}
             <SkillConstellation />
             <CurrentlyBoard position={MARKERS.currently.position} rotationY={-Math.PI / 2} />
             {PENDANTS.map(([x, y, z]) => (
@@ -330,6 +331,15 @@ function Models() {
             <Model name="steel-shelves" position={[sx, 0, -Z + 0.38]} />
             <Bookshelf position={[sx, 0, -Z + 0.38]} />
             <Model name="vase" position={[sx - 0.75, SHELF_TOP, -Z + 0.36]} collider={false} />
+
+            {/* the centrepiece: an arcade cabinet, playing its own demo until you step up */}
+            <Interactable
+                id="lobby-arcade"
+                label="Arcade · Puncture Run"
+                action={{ kind: 'sit', seat: 'lobby-arcade' }}
+            >
+                <ArcadeCabinet />
+            </Interactable>
 
             {/* lounge by the window: a chesterfield facing the room, a lounge chair, a low table */}
             <Model name="sofa" position={[fx, 0, fz]} rotationY={Math.PI} />

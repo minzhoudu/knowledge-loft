@@ -12,9 +12,10 @@ import {
     resumeFromKey,
     toggleFullscreen,
 } from '@/world/player/input';
-import { leaveLabel, SEATS, seatVerb } from '@/world/seats/seats';
+import { SEATS } from '@/world/seats/seats';
 import { Clock, EnvironmentControls, useWeatherFeed } from './Clock';
 import { useGithubFeed } from './github';
+import { ArcadePad } from './ArcadePad';
 import { Joystick } from './Joystick';
 import { PanelBody, panelTitle } from './sections';
 
@@ -293,6 +294,10 @@ export function Hud() {
                 </div>
             )}
 
+            {mode === 'seated' && seat === 'lobby-arcade' && seatPhase === 'seated' && (
+                <ArcadePad touch={touch} />
+            )}
+
             {mode === 'seated' && seat && seatPhase !== 'leaving' && (
                 <button
                     type="button"
@@ -304,7 +309,7 @@ export function Hud() {
                             Esc
                         </kbd>
                     )}
-                    {leaveLabel(SEATS[seat])}
+                    {SEATS[seat].leave}
                 </button>
             )}
 
@@ -373,7 +378,7 @@ export function Hud() {
 
 function actionVerb(target: FocusTarget, doorOpen: boolean) {
     if (target.action.kind === 'door') return doorOpen ? 'Close' : 'Open';
-    if (target.action.kind === 'sit') return seatVerb(SEATS[target.action.seat]);
+    if (target.action.kind === 'sit') return SEATS[target.action.seat].verb;
     if (target.action.kind === 'book') return 'Read';
     return 'Inspect';
 }

@@ -27,7 +27,7 @@ const INSIDE = 1.3; // how far past the door you arrive
 export const MAP_ROOMS: Record<RoomId, MapRoom> = {
     lobby: {
         label: 'Lobby',
-        hint: 'About, currently, skills, field notes',
+        hint: 'About, skills, field notes, an arcade',
         rect: [-LOBBY.halfWidth, -LOBBY.halfDepth, LOBBY.halfWidth, LOBBY.halfDepth],
         entry: {
             x: MARKERS.spawn.position[0],
