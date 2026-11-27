@@ -12,9 +12,35 @@ const plexMono = IBM_Plex_Mono({
     weight: ['400', '500'],
 });
 
+/**
+ * The site's public address, for links that must be absolute (the preview
+ * image above all). SITE_URL if set (a custom domain); otherwise, on
+ * Vercel, the project's production address, which Vercel provides at build
+ * time; otherwise the dev server.
+ */
+const siteUrl =
+    process.env.SITE_URL ??
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL
+        ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+        : 'http://localhost:3000');
+
+const title = `${about.name} · Studio`;
+const description = `${about.headline} in ${about.location}. Walk through my portfolio as a 3D studio loft, or read the one-page quick view.`;
+
+// The preview image itself comes from opengraph-image.tsx (Next.js adds its tags).
 export const metadata: Metadata = {
-    title: `${about.name} · Studio`,
-    description: about.headline,
+    metadataBase: new URL(siteUrl),
+    title,
+    description,
+    openGraph: {
+        type: 'website',
+        url: '/',
+        siteName: about.name,
+        title,
+        description,
+        locale: 'en_GB',
+    },
+    twitter: { card: 'summary_large_image', title, description },
 };
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
