@@ -85,6 +85,14 @@ export type BookPhase = 'taking' | 'open' | 'returning';
 export type ConstellationPhase = 'entering' | 'inside' | 'leaving';
 
 /**
+ * Stepping up to the bookshelf: the camera glides to a spot in front of it,
+ * framing every row ("arriving"), you look along the spines and pick one
+ * ("browsing"), then it glides back ("leaving"). Like the constellation, you
+ * stay in "exploring" mode, so aiming and E work as usual; only walking is off.
+ */
+export type ShelfPhase = 'arriving' | 'browsing' | 'leaving';
+
+/**
  * What happens when the player uses an interactable: open a content panel,
  * toggle a door, sit down at a screen, or take a book (a note's slug). Plain
  * data (no functions), so it's easy to store, compare and log.
@@ -95,6 +103,7 @@ export type Action =
     | { kind: 'sit'; seat: SeatId }
     | { kind: 'book'; book: string }
     | { kind: 'constellation' }
+    | { kind: 'shelf' }
     | { kind: 'switch'; room: RoomId; what: 'lights' | 'blinds' };
 
 /** The interactable the crosshair is on. `id` is unique per object in the world. */
@@ -151,6 +160,17 @@ type WorldState = {
     /** Start stepping out (the cloud shrinks back, the room returns, walking resumes). */
     leaveConstellation: () => void;
     setConstellationPhase: (phase: ConstellationPhase | null) => void;
+    shelf: ShelfPhase | null;
+    browseShelf: () => void;
+    /** Start stepping back from the shelf (the camera glides back, walking resumes). */
+    leaveShelf: () => void;
+    setShelfPhase: (phase: ShelfPhase | null) => void;
+    /**
+     * A book has been taken at least once this visit. Until then the shelf
+     * invites you (a book left sticking out, a glow along the spines); once
+     * you've found the books, it stops.
+     */
+    readABook: boolean;
     mapPhase: MapPhase | null;
     /** The room picked on the map (it's where the dive ends). */
     mapTarget: RoomId | null;
@@ -227,7 +247,8 @@ export const useWorld = create<WorldState>((set) => ({
     setSeatPhase: (seatPhase) => set(seatPhase ? { seatPhase } : { seat: null, seatPhase: null }),
     book: null,
     bookPhase: null,
-    takeBook: (book) => set({ book, bookPhase: 'taking', mode: 'holding', focused: null }),
+    takeBook: (book) =>
+        set({ book, bookPhase: 'taking', mode: 'holding', focused: null, readABook: true }),
     putBack: () =>
         set((s) => (s.book && s.bookPhase !== 'returning' ? { bookPhase: 'returning' } : {})),
     setBookPhase: (bookPhase) => set(bookPhase ? { bookPhase } : { book: null, bookPhase: null }),
@@ -240,6 +261,16 @@ export const useWorld = create<WorldState>((set) => ({
                 : {},
         ),
     setConstellationPhase: (constellation) => set({ constellation }),
+    shelf: null,
+    browseShelf: () => set({ shelf: 'arriving', focused: null }),
+    leaveShelf: () =>
+        set((s) =>
+            s.shelf === 'arriving' || s.shelf === 'browsing'
+                ? { shelf: 'leaving', focused: null }
+                : {},
+        ),
+    setShelfPhase: (shelf) => set({ shelf }),
+    readABook: false,
     mapPhase: null,
     mapTarget: null,
     mapDestination: null,
@@ -324,6 +355,9 @@ export function performAction(action: Action) {
     } else if (action.kind === 'constellation') {
         // The mouse stays captured: inside, you look around with it as usual.
         s.enterConstellation();
+    } else if (action.kind === 'shelf') {
+        // Same: stepping up to the shelf keeps the mouse, to aim along the spines.
+        s.browseShelf();
     } else {
         s.open(action.panel);
         // Released by us, not by Esc, so closing the panel can capture the mouse

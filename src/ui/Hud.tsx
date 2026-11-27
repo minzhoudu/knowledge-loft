@@ -49,6 +49,9 @@ export function Hud() {
     const bookPhase = useWorld((s) => s.bookPhase);
     const mapPhase = useWorld((s) => s.mapPhase);
     const constellation = useWorld((s) => s.constellation);
+    const shelf = useWorld((s) => s.shelf);
+    // Standing still somewhere you only look around: no map, no joystick.
+    const standing = !!constellation || !!shelf;
     // Only re-render for the focused door's state, not every door in the world.
     const focusedDoorOpen = useWorld((s) =>
         s.focused?.action.kind === 'door' ? !!s.doors[s.focused.action.door] : false,
@@ -82,6 +85,7 @@ export function Hud() {
             if (
                 e.code === 'Tab' &&
                 !s.constellation &&
+                !s.shelf &&
                 (s.mode === 'exploring' || s.mode === 'map')
             ) {
                 // Tab opens and closes the map, as in many games (instead of moving
@@ -105,6 +109,9 @@ export function Hud() {
                 // browser lets go of it too; PointerLook steps out on that instead
                 // of pausing, so either way ends here.)
                 s.leaveConstellation();
+            } else if (esc && s.mode === 'exploring' && s.shelf) {
+                // Step back from the bookshelf (the same two routes as above).
+                s.leaveShelf();
             } else if (e.code === 'KeyM' && !e.repeat) {
                 s.toggleMuted();
             } else if (esc && s.mode === 'reading') {
@@ -138,11 +145,46 @@ export function Hud() {
             captureOnEscUp = false;
             if (useWorld.getState().mode === 'exploring') resumeFromKey();
         }
+        // At the bookshelf, a left click takes the book you're aiming at (E
+        // still works too). With the mouse captured, the press itself is the
+        // click; looking by drag, the same button also slides the view, so only
+        // a press that comes back up without moving counts.
+        let press: { moved: number } | null = null;
+        const takeAimedBook = () => {
+            const s = useWorld.getState();
+            if (
+                s.mode === 'exploring' &&
+                s.shelf === 'browsing' &&
+                s.focused?.action.kind === 'book'
+            ) {
+                performAction(s.focused.action);
+            }
+        };
+        function onPointerDown(e: PointerEvent) {
+            if (e.button !== 0 || e.pointerType !== 'mouse') return;
+            if (!(e.target instanceof HTMLCanvasElement)) return; // a HUD button, not the world
+            if (document.pointerLockElement) takeAimedBook();
+            else press = { moved: 0 };
+        }
+        function onPointerMove(e: PointerEvent) {
+            if (press) press.moved += Math.abs(e.movementX) + Math.abs(e.movementY);
+        }
+        function onPointerUp() {
+            if (press && press.moved < 6) takeAimedBook();
+            press = null;
+        }
+
         window.addEventListener('keydown', onKey);
         window.addEventListener('keyup', onKeyUp);
+        window.addEventListener('pointerdown', onPointerDown);
+        window.addEventListener('pointermove', onPointerMove);
+        window.addEventListener('pointerup', onPointerUp);
         return () => {
             window.removeEventListener('keydown', onKey);
             window.removeEventListener('keyup', onKeyUp);
+            window.removeEventListener('pointerdown', onPointerDown);
+            window.removeEventListener('pointermove', onPointerMove);
+            window.removeEventListener('pointerup', onPointerUp);
         };
     }, []);
 
@@ -163,7 +205,7 @@ export function Hud() {
                             className="min-w-0 truncate rounded-full bg-panel px-3 py-1.5 text-fg backdrop-blur"
                         />
                         <div className="pointer-events-auto flex shrink-0 gap-2">
-                            {!constellation && (
+                            {!standing && (
                                 <button
                                     type="button"
                                     onClick={openMap}
@@ -202,7 +244,7 @@ export function Hud() {
                     {focused && !touch && (
                         <div className="pointer-events-none fixed left-1/2 top-[58%] -translate-x-1/2 rounded-lg bg-panel px-3 py-2 text-sm text-fg backdrop-blur">
                             <kbd className="mr-2 rounded border border-line px-1.5 py-0.5 font-mono text-xs">
-                                E
+                                {focused.action.kind === 'book' ? 'Click' : 'E'}
                             </kbd>
                             {verb} · {focused.label}
                         </div>
@@ -210,7 +252,7 @@ export function Hud() {
 
                     {touch && (
                         <>
-                            {!constellation && <Joystick />}
+                            {!standing && <Joystick />}
                             {focused && (
                                 <button
                                     type="button"
@@ -331,6 +373,37 @@ export function Hud() {
                 </button>
             )}
 
+            {mode === 'exploring' && shelf === 'browsing' && (
+                <div
+                    // On touch, to the left: the Read button sits bottom right.
+                    className={`fixed bottom-[calc(env(safe-area-inset-bottom,0px)+24px)] z-30 flex items-center gap-3 ${
+                        touch
+                            ? 'left-[max(24px,env(safe-area-inset-left,0px))] flex-col-reverse items-start'
+                            : 'left-1/2 -translate-x-1/2'
+                    }`}
+                >
+                    {!focused && (
+                        <p className="pointer-events-none whitespace-nowrap rounded-full bg-panel px-3 py-1.5 text-xs text-muted backdrop-blur">
+                            {touch
+                                ? 'Drag to slide along the shelf'
+                                : 'Mouse or WASD to slide along the shelf'}
+                        </p>
+                    )}
+                    <button
+                        type="button"
+                        onClick={() => useWorld.getState().leaveShelf()}
+                        className="whitespace-nowrap rounded-full bg-panel px-4 py-2 text-sm text-fg backdrop-blur hover:text-accent"
+                    >
+                        {!touch && (
+                            <kbd className="mr-2 rounded border border-line px-1.5 py-0.5 font-mono text-xs">
+                                Esc
+                            </kbd>
+                        )}
+                        Step back
+                    </button>
+                </div>
+            )}
+
             {mode === 'seated' && seat === 'lobby-arcade' && seatPhase === 'seated' && (
                 <ArcadePad touch={touch} />
             )}
@@ -418,6 +491,7 @@ function actionVerb(target: FocusTarget, doorOpen: boolean) {
     if (target.action.kind === 'sit') return SEATS[target.action.seat].verb;
     if (target.action.kind === 'book') return 'Read';
     if (target.action.kind === 'constellation') return 'Step inside';
+    if (target.action.kind === 'shelf') return 'Browse';
     if (target.action.kind === 'switch') {
         const { room, what } = target.action;
         if (what === 'blinds') return useWorld.getState().blinds[room] ? 'Raise' : 'Lower';

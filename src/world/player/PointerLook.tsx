@@ -62,12 +62,15 @@ export function PointerLook() {
                     );
                 }
                 // Released by Esc (or the browser) while walking = pause; inside the
-                // constellation, Esc steps out instead. Releasing to read a panel is
-                // on purpose; the panel code already set the mode.
+                // constellation or at the bookshelf, Esc steps out instead.
+                // Releasing to read a panel is on purpose; the panel code already
+                // set the mode.
                 if (s.mode === 'exploring' && s.look === 'pointer-lock') {
                     if (s.constellation === 'entering' || s.constellation === 'inside') {
                         s.leaveConstellation();
-                    } else if (!s.constellation) {
+                    } else if (s.shelf === 'arriving' || s.shelf === 'browsing') {
+                        s.leaveShelf();
+                    } else if (!s.constellation && !s.shelf) {
                         s.setMode('paused');
                     }
                 }
@@ -93,6 +96,9 @@ export function PointerLook() {
             const s = useWorld.getState();
             if (e.pointerType !== 'mouse' || s.mode !== 'exploring') return;
             if (!s.relockOnClick || !s.canLock || s.relocking) return;
+            // A click on a book at the shelf takes the book (see Hud), which
+            // frees the mouse; capturing it here would fight that.
+            if (s.shelf === 'browsing' && s.focused?.action.kind === 'book') return;
             Promise.resolve(canvas.requestPointerLock()).catch(() => {}); // refused: keep dragging
         };
 
