@@ -47,6 +47,7 @@ export function Hud() {
     const seat = useWorld((s) => s.seat);
     const bookPhase = useWorld((s) => s.bookPhase);
     const mapPhase = useWorld((s) => s.mapPhase);
+    const constellation = useWorld((s) => s.constellation);
     // Only re-render for the focused door's state, not every door in the world.
     const focusedDoorOpen = useWorld((s) =>
         s.focused?.action.kind === 'door' ? !!s.doors[s.focused.action.door] : false,
@@ -68,7 +69,11 @@ export function Hud() {
         function onKey(e: KeyboardEvent) {
             const s = useWorld.getState();
             const esc = e.code === 'Escape' && !e.repeat; // holding Esc mustn't toggle the pause over and over
-            if (e.code === 'Tab' && (s.mode === 'exploring' || s.mode === 'map')) {
+            if (
+                e.code === 'Tab' &&
+                !s.constellation &&
+                (s.mode === 'exploring' || s.mode === 'map')
+            ) {
                 // Tab opens and closes the map, as in many games (instead of moving
                 // keyboard focus, which means nothing while you walk around).
                 e.preventDefault();
@@ -85,6 +90,11 @@ export function Hud() {
             } else if (s.mode === 'holding' && (esc || (e.code === 'KeyE' && !e.repeat))) {
                 // Put the book back. Its flight home ends in resumeFromKey (CarriedBook).
                 s.putBack();
+            } else if (esc && s.mode === 'exploring' && s.constellation) {
+                // Step out of the constellation. (With the mouse captured, the
+                // browser lets go of it too; PointerLook steps out on that instead
+                // of pausing, so either way ends here.)
+                s.leaveConstellation();
             } else if (e.code === 'KeyM' && !e.repeat) {
                 s.toggleMuted();
             } else if (esc && s.mode === 'reading') {
@@ -143,22 +153,24 @@ export function Hud() {
                             className="min-w-0 truncate rounded-full bg-panel px-3 py-1.5 text-fg backdrop-blur"
                         />
                         <div className="pointer-events-auto flex shrink-0 gap-2">
-                            <button
-                                type="button"
-                                onClick={openMap}
-                                className={`rounded-full bg-panel text-fg backdrop-blur hover:text-accent ${
-                                    touch
-                                        ? 'px-4 py-2 text-sm font-semibold'
-                                        : 'px-3 py-1.5 text-sm'
-                                }`}
-                            >
-                                Map
-                                {!touch && (
-                                    <kbd className="ml-2 rounded border border-line px-1.5 py-0.5 font-mono text-xs">
-                                        Tab
-                                    </kbd>
-                                )}
-                            </button>
+                            {!constellation && (
+                                <button
+                                    type="button"
+                                    onClick={openMap}
+                                    className={`rounded-full bg-panel text-fg backdrop-blur hover:text-accent ${
+                                        touch
+                                            ? 'px-4 py-2 text-sm font-semibold'
+                                            : 'px-3 py-1.5 text-sm'
+                                    }`}
+                                >
+                                    Map
+                                    {!touch && (
+                                        <kbd className="ml-2 rounded border border-line px-1.5 py-0.5 font-mono text-xs">
+                                            Tab
+                                        </kbd>
+                                    )}
+                                </button>
+                            )}
                             {touch && (
                                 <button
                                     type="button"
@@ -188,7 +200,7 @@ export function Hud() {
 
                     {touch && (
                         <>
-                            <Joystick />
+                            {!constellation && <Joystick />}
                             {focused && (
                                 <button
                                     type="button"
@@ -294,6 +306,21 @@ export function Hud() {
                 </div>
             )}
 
+            {mode === 'exploring' && constellation === 'inside' && (
+                <button
+                    type="button"
+                    onClick={() => useWorld.getState().leaveConstellation()}
+                    className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+24px)] left-1/2 z-30 -translate-x-1/2 rounded-full bg-panel px-4 py-2 text-sm text-fg backdrop-blur hover:text-accent"
+                >
+                    {!touch && (
+                        <kbd className="mr-2 rounded border border-line px-1.5 py-0.5 font-mono text-xs">
+                            Esc
+                        </kbd>
+                    )}
+                    Step out
+                </button>
+            )}
+
             {mode === 'seated' && seat === 'lobby-arcade' && seatPhase === 'seated' && (
                 <ArcadePad touch={touch} />
             )}
@@ -380,6 +407,7 @@ function actionVerb(target: FocusTarget, doorOpen: boolean) {
     if (target.action.kind === 'door') return doorOpen ? 'Close' : 'Open';
     if (target.action.kind === 'sit') return SEATS[target.action.seat].verb;
     if (target.action.kind === 'book') return 'Read';
+    if (target.action.kind === 'constellation') return 'Step inside';
     return 'Inspect';
 }
 

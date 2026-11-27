@@ -21,6 +21,8 @@ import { Lobby } from '@/world/rooms/lobby/Lobby';
 import { ProjectsRoom } from '@/world/rooms/projects/ProjectsRoom';
 import { SeatCamera } from '@/world/seats/SeatCamera';
 import { CarriedBook } from '@/world/bookshelf/CarriedBook';
+import { ConstellationCamera } from '@/world/constellation/ConstellationCamera';
+import { DarkRoom } from '@/world/constellation/DarkRoom';
 
 /**
  * The 3D experience. Loaded client-only (see WorldClient), because WebGL,
@@ -66,6 +68,8 @@ export default function Experience() {
                 </Suspense>
                 <SeatCamera />
                 <CarriedBook />
+                <ConstellationCamera />
+                <DarkRoom />
                 <Outside />
                 <MapCamera />
                 <MapOverlay />

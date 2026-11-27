@@ -72,6 +72,15 @@ export type MapPhase = 'rising' | 'open' | 'diving' | 'returning';
 export type BookPhase = 'taking' | 'open' | 'returning';
 
 /**
+ * Stepping inside the skill constellation: the camera glides into the middle
+ * of the cloud as it grows around you and the room fades to dark
+ * ("entering"), you look around and pick stars ("inside"), then it all
+ * reverses ("leaving"). You stay in "exploring" mode the whole time, so mouse
+ * look, aiming and panels work as usual; only walking is off.
+ */
+export type ConstellationPhase = 'entering' | 'inside' | 'leaving';
+
+/**
  * What happens when the player uses an interactable: open a content panel,
  * toggle a door, sit down at a screen, or take a book (a note's slug). Plain
  * data (no functions), so it's easy to store, compare and log.
@@ -80,7 +89,8 @@ export type Action =
     | { kind: 'panel'; panel: Panel }
     | { kind: 'door'; door: string }
     | { kind: 'sit'; seat: SeatId }
-    | { kind: 'book'; book: string };
+    | { kind: 'book'; book: string }
+    | { kind: 'constellation' };
 
 /** The interactable the crosshair is on. `id` is unique per object in the world. */
 export type FocusTarget = { id: string; label: string; action: Action };
@@ -119,6 +129,11 @@ type WorldState = {
     /** Start putting the book back (it closes and flies to its shelf, then walking resumes). */
     putBack: () => void;
     setBookPhase: (phase: BookPhase | null) => void;
+    constellation: ConstellationPhase | null;
+    enterConstellation: () => void;
+    /** Start stepping out (the cloud shrinks back, the room returns, walking resumes). */
+    leaveConstellation: () => void;
+    setConstellationPhase: (phase: ConstellationPhase | null) => void;
     mapPhase: MapPhase | null;
     /** The room picked on the map (it's where the dive ends). */
     mapTarget: RoomId | null;
@@ -183,6 +198,15 @@ export const useWorld = create<WorldState>((set) => ({
     putBack: () =>
         set((s) => (s.book && s.bookPhase !== 'returning' ? { bookPhase: 'returning' } : {})),
     setBookPhase: (bookPhase) => set(bookPhase ? { bookPhase } : { book: null, bookPhase: null }),
+    constellation: null,
+    enterConstellation: () => set({ constellation: 'entering', focused: null }),
+    leaveConstellation: () =>
+        set((s) =>
+            s.constellation === 'entering' || s.constellation === 'inside'
+                ? { constellation: 'leaving', focused: null }
+                : {},
+        ),
+    setConstellationPhase: (constellation) => set({ constellation }),
     mapPhase: null,
     mapTarget: null,
     openMap: () => set({ mode: 'map', mapPhase: 'rising', mapTarget: null, focused: null }),
@@ -236,7 +260,7 @@ function writeMuted(muted: boolean) {
 /**
  * Run an interactable's action. Opening a panel or sitting down releases the
  * mouse so the visitor can click links (and scroll the screen); a door just
- * toggles and play continues.
+ * toggles and play continues, and so does stepping into the constellation.
  */
 export function performAction(action: Action) {
     const s = useWorld.getState();
@@ -248,6 +272,9 @@ export function performAction(action: Action) {
     } else if (action.kind === 'book') {
         s.takeBook(action.book);
         releaseMouse();
+    } else if (action.kind === 'constellation') {
+        // The mouse stays captured: inside, you look around with it as usual.
+        s.enterConstellation();
     } else {
         s.open(action.panel);
         // Released by us, not by Esc, so closing the panel can capture the mouse

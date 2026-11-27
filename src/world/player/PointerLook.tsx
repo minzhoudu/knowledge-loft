@@ -61,9 +61,16 @@ export function PointerLook() {
                         RELOCK_COOLDOWN_MS,
                     );
                 }
-                // Released by Esc (or the browser) while walking = pause. Releasing to
-                // read a panel is on purpose; the panel code already set the mode.
-                if (s.mode === 'exploring' && s.look === 'pointer-lock') s.setMode('paused');
+                // Released by Esc (or the browser) while walking = pause; inside the
+                // constellation, Esc steps out instead. Releasing to read a panel is
+                // on purpose; the panel code already set the mode.
+                if (s.mode === 'exploring' && s.look === 'pointer-lock') {
+                    if (s.constellation === 'entering' || s.constellation === 'inside') {
+                        s.leaveConstellation();
+                    } else if (!s.constellation) {
+                        s.setMode('paused');
+                    }
+                }
             }
         };
 

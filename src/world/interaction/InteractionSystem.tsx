@@ -51,14 +51,19 @@ export function InteractionSystem() {
     }, []);
 
     useFrame(() => {
-        const { mode, focused, setFocused } = useWorld.getState();
+        const { mode, focused, setFocused, constellation } = useWorld.getState();
         if (mode !== 'exploring') {
             if (focused) setFocused(null);
             return;
         }
 
         raycaster.setFromCamera(CENTER, camera);
-        const hit = pick(raycaster.intersectObjects([...interactables.values()], true), raycaster);
+        // Inside the constellation only its stars count: the room is still
+        // there behind the dark, and a bookshelf you can't see mustn't answer.
+        const targets = constellation
+            ? [...interactables].filter(([id]) => id.startsWith('skill:')).map(([, g]) => g)
+            : [...interactables.values()];
+        const hit = pick(raycaster.intersectObjects(targets, true), raycaster);
 
         let next: typeof focused = null;
         let obj: Object3D | null = hit?.object ?? null;
