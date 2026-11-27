@@ -96,6 +96,9 @@ export type Action =
 export type FocusTarget = { id: string; label: string; action: Action };
 
 type WorldState = {
+    /** Everything has loaded and the first frames are drawn: the loading screen can go. */
+    ready: boolean;
+    setReady: () => void;
     mode: Mode;
     look: LookMode;
     /** True on phones/tablets: shows the joystick and touch buttons. */
@@ -176,6 +179,8 @@ type WorldState = {
 };
 
 export const useWorld = create<WorldState>((set) => ({
+    ready: false,
+    setReady: () => set({ ready: true }),
     mode: 'intro',
     look: 'pointer-lock',
     touch: false,

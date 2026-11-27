@@ -1,6 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import { LoadingScreen } from '@/ui/LoadingScreen';
 
 /**
  * Client-only entry for the 3D world. `ssr: false` must live in a Client
@@ -9,11 +10,9 @@ import dynamic from 'next/dynamic';
  */
 const Experience = dynamic(() => import('./Experience'), {
     ssr: false,
-    loading: () => (
-        <div className="fixed inset-0 grid place-items-center font-mono text-xs uppercase tracking-widest text-muted">
-            Loading the loft…
-        </div>
-    ),
+    // The same loading screen the world shows next (LoadingCover), so the
+    // hand-over from "downloading the code" to "loading the room" is seamless.
+    loading: () => <LoadingScreen status="Opening the door…" />,
 });
 
 export function WorldClient() {

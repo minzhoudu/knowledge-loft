@@ -58,6 +58,18 @@
     }
 }
 
+/* The loading bar's glint: a highlight sliding across. It animates
+   transform only, which the browser runs off the main thread, so it keeps
+   moving even while the page is busy compiling shaders. */
+@keyframes loading-shimmer {
+    from {
+        transform: translateX(-100%);
+    }
+    to {
+        transform: translateX(300%);
+    }
+}
+
 /* A desk monitor's page appearing as you sit down (world/seats/DeskScreen). */
 @keyframes screen-on {
     from {

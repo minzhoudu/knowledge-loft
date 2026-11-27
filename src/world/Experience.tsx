@@ -21,6 +21,7 @@ import { Lobby } from '@/world/rooms/lobby/Lobby';
 import { ProjectsRoom } from '@/world/rooms/projects/ProjectsRoom';
 import { SeatCamera } from '@/world/seats/SeatCamera';
 import { CarriedBook } from '@/world/bookshelf/CarriedBook';
+import { LoadingCover, PhysicsReady, ReadyWatcher } from '@/world/loading';
 import { ConstellationCamera } from '@/world/constellation/ConstellationCamera';
 import { DarkRoom } from '@/world/constellation/DarkRoom';
 
@@ -64,6 +65,7 @@ export default function Experience() {
                         <CareerRoom />
                         <HobbiesRoom />
                         <Player />
+                        <PhysicsReady />
                     </Physics>
                 </Suspense>
                 <SeatCamera />
@@ -78,9 +80,11 @@ export default function Experience() {
                 <DragLook />
                 <PointerLook />
                 <PostEffects />
+                <ReadyWatcher />
                 {perf && <StatsGl className="perf-meter" />}
             </Canvas>
             <Hud />
+            <LoadingCover />
         </div>
     );
 }
