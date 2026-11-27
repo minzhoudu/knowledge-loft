@@ -23,7 +23,7 @@ export type Mode =
     | 'paused' // stopped (Esc or the pause button), not reading anything
     | 'reading' // a content panel is open
     | 'seated' // sitting at a desk, reading its screen (see world/seats)
-    | 'holding' // holding a book from the shelf, reading it (see world/bookshelf)
+    | 'holding' // holding a book from the shelf or the printed CV, reading it (see world/bookshelf, world/printer)
     | 'map'; // looking down at the whole loft, picking a room to jump to (see world/map)
 
 /**
@@ -92,6 +92,15 @@ export type ConstellationPhase = 'entering' | 'inside' | 'leaving';
  */
 export type ShelfPhase = 'arriving' | 'browsing' | 'leaving';
 
+/** The CV printer by the desk: printing, or done with the sheet lying in its tray. */
+export type PrinterPhase = 'printing' | 'printed';
+
+/**
+ * The printed CV in your hands: lifted from the tray ("taking"), held up to
+ * read and download ("held"), laid back in the tray ("returning").
+ */
+export type SheetPhase = 'taking' | 'held' | 'returning';
+
 /**
  * What happens when the player uses an interactable: open a content panel,
  * toggle a door, sit down at a screen, or take a book (a note's slug). Plain
@@ -104,6 +113,8 @@ export type Action =
     | { kind: 'book'; book: string }
     | { kind: 'constellation' }
     | { kind: 'shelf' }
+    | { kind: 'print' }
+    | { kind: 'sheet' }
     | { kind: 'switch'; room: RoomId; what: 'lights' | 'blinds' };
 
 /** The interactable the crosshair is on. `id` is unique per object in the world. */
@@ -171,6 +182,14 @@ type WorldState = {
      * you've found the books, it stops.
      */
     readABook: boolean;
+    printer: PrinterPhase | null;
+    printCv: () => void;
+    setPrinter: (phase: PrinterPhase | null) => void;
+    sheet: SheetPhase | null;
+    takeSheet: () => void;
+    /** Start laying the sheet back in the tray (then walking resumes). */
+    putDownSheet: () => void;
+    setSheet: (phase: SheetPhase | null) => void;
     mapPhase: MapPhase | null;
     /** The room picked on the map (it's where the dive ends). */
     mapTarget: RoomId | null;
@@ -271,6 +290,14 @@ export const useWorld = create<WorldState>((set) => ({
         ),
     setShelfPhase: (shelf) => set({ shelf }),
     readABook: false,
+    printer: null,
+    printCv: () => set((s) => (s.printer ? {} : { printer: 'printing' })),
+    setPrinter: (printer) => set({ printer }),
+    sheet: null,
+    takeSheet: () => set({ sheet: 'taking', mode: 'holding', focused: null }),
+    putDownSheet: () =>
+        set((s) => (s.sheet && s.sheet !== 'returning' ? { sheet: 'returning' } : {})),
+    setSheet: (sheet) => set({ sheet }),
     mapPhase: null,
     mapTarget: null,
     mapDestination: null,
@@ -358,6 +385,13 @@ export function performAction(action: Action) {
     } else if (action.kind === 'shelf') {
         // Same: stepping up to the shelf keeps the mouse, to aim along the spines.
         s.browseShelf();
+    } else if (action.kind === 'print') {
+        // You watch it print, so walking (and the mouse) carry on.
+        s.printCv();
+    } else if (action.kind === 'sheet') {
+        // Like a book; the mouse is freed for the Download button.
+        s.takeSheet();
+        releaseMouse();
     } else {
         s.open(action.panel);
         // Released by us, not by Esc, so closing the panel can capture the mouse

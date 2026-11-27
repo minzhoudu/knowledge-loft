@@ -22,6 +22,7 @@ import { ProjectsRoom } from '@/world/rooms/projects/ProjectsRoom';
 import { SeatCamera } from '@/world/seats/SeatCamera';
 import { CarriedBook } from '@/world/bookshelf/CarriedBook';
 import { ShelfCamera } from '@/world/bookshelf/ShelfCamera';
+import { HeldSheet } from '@/world/printer/HeldSheet';
 import { LoadingCover, PhysicsReady, ReadyWatcher } from '@/world/loading';
 import { ConstellationCamera } from '@/world/constellation/ConstellationCamera';
 import { RoomSwitches } from '@/world/switches/RoomSwitches';
@@ -77,6 +78,7 @@ export default function Experience() {
                 </Suspense>
                 <SeatCamera />
                 <CarriedBook />
+                <HeldSheet />
                 <ConstellationCamera />
                 <ShelfCamera />
                 <DarkRoom />
