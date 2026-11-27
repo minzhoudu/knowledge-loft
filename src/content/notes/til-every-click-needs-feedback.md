@@ -10,6 +10,8 @@ In production, switching days in Moj Vulkanizer's schedule changed nothing on sc
 
 `loading.tsx` shows instantly when you navigate to another page. It doesn't reliably show when only the **search params** change on the same page, like `?day=2026-11-28`.
 
+Why: `loading.tsx` is a `<Suspense>` boundary around the page. Going to another page mounts a new one, and a new boundary shows its fallback right away. A new `?day=` keeps you on the same page, so the server re-renders the whole page for it, but on the client it's the same boundary, already showing content. Next.js runs navigations as React transitions, and a transition never replaces content that's on screen with a fallback: it keeps the old page up until the new one is ready. So nothing changes until the data arrives.
+
 The fix: navigate inside `useTransition`, and use its pending flag:
 
 ```tsx
