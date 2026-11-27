@@ -2,7 +2,11 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { create } from 'zustand';
+import type { KioskAction } from '@/ai/kiosk-tools';
+import type { KioskEvent } from '@/app/api/ask/route';
 import { about } from '@/content';
+import { useWorld } from '@/store/world';
+import { destinationFor } from './destinations';
 
 /**
  * The kiosk's screen: a chat with the portfolio (see app/api/ask).
@@ -113,16 +117,33 @@ export function KioskChat() {
                 reply(ERRORS[error ?? ''] ?? 'Something went wrong on my side. Please try again.');
                 return;
             }
+            // The stream is NDJSON: one event per line (see app/api/ask). Network
+            // chunks don't respect lines, so keep any unfinished line for the next
+            // chunk, and handle only the complete ones.
             const reader = res.body.getReader();
             const decoder = new TextDecoder();
             let text = '';
+            let pending = '';
+            let trip: KioskAction | null = null;
             for (;;) {
                 const { done, value } = await reader.read();
                 if (done) break;
-                text += decoder.decode(value, { stream: true });
+                pending += decoder.decode(value, { stream: true });
+                const lines = pending.split('\n');
+                pending = lines.pop() ?? '';
+                for (const line of lines) {
+                    if (!line.trim()) continue;
+                    const event = JSON.parse(line) as KioskEvent;
+                    if (event.type === 'text') text += event.text;
+                    else {
+                        trip = event.action;
+                        text += '\n\n'; // what it says after the tool call starts a new paragraph
+                    }
+                }
                 reply(text, 'streaming');
             }
             reply(text.trim() || "I don't have an answer to that one.");
+            if (trip) takeTrip(trip);
         } catch (error) {
             if ((error as Error).name === 'AbortError') return;
             reply("I couldn't reach my brain just now. Check your connection and try again.");
@@ -204,6 +225,23 @@ export function KioskChat() {
             </form>
         </div>
     );
+}
+
+/** A beat to read the answer before the camera lifts off. */
+const TRIP_DELAY_MS = 1800;
+
+/**
+ * Go where the kiosk offered: after a moment to read its answer, rise over
+ * the loft and dive to the spot (the map view's trip, see MapCamera). Not if
+ * the visitor has stepped back from the kiosk in the meantime.
+ */
+function takeTrip(action: KioskAction) {
+    const to = destinationFor(action);
+    if (!to) return;
+    setTimeout(() => {
+        const s = useWorld.getState();
+        if (s.seat === 'lobby-kiosk' && s.seatPhase === 'seated') s.travel(to);
+    }, TRIP_DELAY_MS);
 }
 
 /** No AI configured (no API key yet), or switched off: say so, and point elsewhere. */
