@@ -19,11 +19,18 @@ import {
     type SkillCategory,
 } from '@/content';
 import { SKILL_COLORS } from '@/world/constellation/colors';
+import { SHARE_ALT } from '../share';
 import { SkyArt } from './SkyArt';
 
+const title = `${about.name} · ${about.headline}`;
+// Its own title and description when shared, with the site's preview image
+// (a page's openGraph replaces the inherited one whole, image included).
+const image = { url: '/opengraph-image', width: 1200, height: 630, alt: SHARE_ALT };
 export const metadata: Metadata = {
-    title: `${about.name} · ${about.headline}`,
+    title,
     description: about.bio,
+    openGraph: { type: 'profile', url: '/quick', title, description: about.bio, images: [image] },
+    twitter: { card: 'summary_large_image', title, description: about.bio, images: [image] },
 };
 
 /**
