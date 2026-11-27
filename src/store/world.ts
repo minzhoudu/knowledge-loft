@@ -51,7 +51,7 @@ export type Panel =
     | { kind: 'repo'; name: string };
 
 /** Places where you stop and read a screen, sitting or standing (see world/seats/seats.ts). */
-export type SeatId = 'lobby-desk' | 'lobby-career' | 'lobby-arcade';
+export type SeatId = 'lobby-desk' | 'lobby-career' | 'lobby-arcade' | 'lobby-kiosk';
 
 /**
  * Sitting down happens in three steps: the camera glides to the seat

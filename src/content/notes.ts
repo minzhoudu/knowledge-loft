@@ -54,7 +54,8 @@ function parseNote(path: string, text: string) {
         /<a href="(https?:)/g,
         '<a target="_blank" rel="noopener noreferrer" href="$1',
     );
-    return { slug, ...meta.data, html, words: body.split(/\s+/).length };
+    // body: the markdown itself (what the AI kiosk reads); html: rendered, for the pages.
+    return { slug, ...meta.data, html, body, words: body.split(/\s+/).length };
 }
 
 const KIND_ORDER = Object.keys(NOTE_KINDS) as NoteKind[];

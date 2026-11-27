@@ -2,6 +2,7 @@ import { Matrix4, Quaternion, Vector3, type PerspectiveCamera } from 'three';
 import { about, companies } from '@/content';
 import type { SectionId, SeatId } from '@/store/world';
 import { ARCADE_SCREEN } from '@/world/arcade/cabinet';
+import { KIOSK_SCREEN } from '@/world/kiosk/layout';
 import { MARKERS } from '@/world/rooms/lobby/layout';
 
 type Vec3 = [number, number, number];
@@ -44,6 +45,8 @@ export type Seat = {
         /** What the screen shows the rest of the time, seen from across the room. */
         idle: IdleLine[];
     };
+    /** Or a conversation (the AI kiosk): a chat on the screen instead of a page. */
+    chat?: { title: string; idle: IdleLine[] };
 };
 
 const desk = MARKERS.deskScreen;
@@ -87,6 +90,24 @@ export const SEATS: Record<SeatId, Seat> = {
                 })),
                 { text: '', tone: 'text' },
                 { text: 'Step up to the screen to read more.', tone: 'muted' },
+            ],
+        },
+    },
+    'lobby-kiosk': {
+        screen: KIOSK_SCREEN,
+        posture: 'stand',
+        verb: 'Ask',
+        leave: 'Step back',
+        margin: 1.45,
+        chat: {
+            title: 'ask.ai',
+            idle: [
+                { text: '~ $ ask', tone: 'prompt' },
+                { text: `Ask me about ${about.name.split(' ')[0]}`, tone: 'title' },
+                { text: 'His work, projects, skills,', tone: 'muted' },
+                { text: 'and what he is up to now.', tone: 'muted' },
+                { text: '', tone: 'text' },
+                { text: 'Step up to the screen.', tone: 'muted' },
             ],
         },
     },

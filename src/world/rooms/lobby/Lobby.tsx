@@ -3,6 +3,7 @@
 import { CuboidCollider, RigidBody } from '@react-three/rapier';
 import { DoubleSide } from 'three';
 import { ArcadeCabinet } from '@/world/arcade/ArcadeCabinet';
+import { Kiosk } from '@/world/kiosk/Kiosk';
 import { CurrentlyBoard } from '@/world/currently/CurrentlyBoard';
 import { Block } from '@/world/greybox/Block';
 import type { Surface } from '@/world/materials/surfaces';
@@ -338,6 +339,9 @@ function Models() {
             >
                 <ArcadeCabinet />
             </Interactable>
+
+            {/* the centrepiece, under the pendant: an AI kiosk that answers questions about me */}
+            <Kiosk />
 
             {/* lounge by the window: a chesterfield facing the room, a lounge chair, a low table */}
             <Model name="sofa" position={[fx, 0, fz]} rotationY={Math.PI} />
