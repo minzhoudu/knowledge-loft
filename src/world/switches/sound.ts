@@ -7,7 +7,8 @@ import { getAudio } from '@/world/audio/engine';
 
 type Vec3 = [number, number, number];
 
-function at(position: Vec3) {
+/** A sound source at a point in the loft (the printer uses it too). */
+export function at(position: Vec3) {
     const e = getAudio();
     if (!e) return null;
     const [x, y, z] = position;

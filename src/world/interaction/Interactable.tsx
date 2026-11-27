@@ -24,10 +24,12 @@ type Props = {
     label: string;
     /** What happens when the player uses this object. */
     action: Action;
+    /** False while it's busy (a printer mid-print): it stays in the world, but doesn't answer. */
+    enabled?: boolean;
     children: ReactNode;
 };
 
-export function Interactable({ id, label, action, children }: Props) {
+export function Interactable({ id, label, action, enabled = true, children }: Props) {
     const ref = useRef<Group>(null);
     const focused = useWorld((s) => s.focused?.id === id);
 
@@ -37,14 +39,15 @@ export function Interactable({ id, label, action, children }: Props) {
 
     useEffect(() => {
         const group = ref.current;
-        if (!group) return;
+        if (!group || !enabled) return;
         const target: FocusTarget = { id, label, action: JSON.parse(actionKey) as Action };
         group.userData.interactable = target;
         interactables.set(id, group);
         return () => {
             interactables.delete(id);
+            delete group.userData.interactable;
         };
-    }, [id, label, actionKey]);
+    }, [id, label, actionKey, enabled]);
 
     return (
         <group ref={ref}>

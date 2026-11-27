@@ -12,6 +12,7 @@ import {
     resumeFromKey,
     toggleFullscreen,
 } from '@/world/player/input';
+import { about } from '@/content';
 import { SEATS } from '@/world/seats/seats';
 import { lightsOn } from '@/world/switches/state';
 import { Clock, EnvironmentControls, useWeatherFeed } from './Clock';
@@ -50,6 +51,7 @@ export function Hud() {
     const mapPhase = useWorld((s) => s.mapPhase);
     const constellation = useWorld((s) => s.constellation);
     const shelf = useWorld((s) => s.shelf);
+    const sheet = useWorld((s) => s.sheet);
     // Standing still somewhere you only look around: no map, no joystick.
     const standing = !!constellation || !!shelf;
     // Only re-render for the focused door's state, not every door in the world.
@@ -102,8 +104,10 @@ export function Hud() {
                 // Get up from a desk. The glide back ends in resumeFromKey (SeatCamera).
                 s.standUp();
             } else if (s.mode === 'holding' && (esc || (e.code === 'KeyE' && !e.repeat))) {
-                // Put the book back. Its flight home ends in resumeFromKey (CarriedBook).
-                s.putBack();
+                // Put the book (or the printed CV) back. The flight home ends in
+                // resumeFromKey (CarriedBook, HeldSheet).
+                if (s.sheet) s.putDownSheet();
+                else s.putBack();
             } else if (esc && s.mode === 'exploring' && s.constellation) {
                 // Step out of the constellation. (With the mouse captured, the
                 // browser lets go of it too; PointerLook steps out on that instead
@@ -439,7 +443,33 @@ export function Hud() {
                 </div>
             )}
 
-            {mode === 'holding' && bookPhase !== 'returning' && (
+            {mode === 'holding' && sheet && sheet !== 'returning' && (
+                <div className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+24px)] left-1/2 z-30 flex -translate-x-1/2 items-center gap-2">
+                    {about.cv && (
+                        <a
+                            href={about.cv}
+                            download={`${about.name} CV.pdf`}
+                            className="whitespace-nowrap rounded-full bg-accent px-4 py-2 text-sm font-semibold text-black hover:brightness-110"
+                        >
+                            Download PDF <span aria-hidden>↓</span>
+                        </a>
+                    )}
+                    <button
+                        type="button"
+                        onClick={() => useWorld.getState().putDownSheet()}
+                        className="whitespace-nowrap rounded-full bg-panel px-4 py-2 text-sm text-fg backdrop-blur hover:text-accent"
+                    >
+                        {!touch && (
+                            <kbd className="mr-2 rounded border border-line px-1.5 py-0.5 font-mono text-xs">
+                                Esc
+                            </kbd>
+                        )}
+                        Put down
+                    </button>
+                </div>
+            )}
+
+            {mode === 'holding' && bookPhase && bookPhase !== 'returning' && (
                 <button
                     type="button"
                     onClick={() => useWorld.getState().putBack()}
@@ -492,6 +522,8 @@ function actionVerb(target: FocusTarget, doorOpen: boolean) {
     if (target.action.kind === 'book') return 'Read';
     if (target.action.kind === 'constellation') return 'Step inside';
     if (target.action.kind === 'shelf') return 'Browse';
+    if (target.action.kind === 'print') return 'Print';
+    if (target.action.kind === 'sheet') return 'Take';
     if (target.action.kind === 'switch') {
         const { room, what } = target.action;
         if (what === 'blinds') return useWorld.getState().blinds[room] ? 'Raise' : 'Lower';

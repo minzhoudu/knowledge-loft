@@ -4,6 +4,7 @@ import { CuboidCollider, RigidBody } from '@react-three/rapier';
 import { DoubleSide } from 'three';
 import { ArcadeCabinet } from '@/world/arcade/ArcadeCabinet';
 import { Kiosk } from '@/world/kiosk/Kiosk';
+import { Printer } from '@/world/printer/Printer';
 import { CurrentlyBoard } from '@/world/currently/CurrentlyBoard';
 import { Block } from '@/world/greybox/Block';
 import type { Surface } from '@/world/materials/surfaces';
@@ -314,6 +315,8 @@ function Models() {
                 />
             </Interactable>
             <Model name="armchair" position={[dx, 0, dz + 0.95]} rotationY={Math.PI} />
+            {/* beside the desk: a printer that prints the CV, to read and download */}
+            <Printer />
 
             {/* wall display: Career. Using it steps you up to read it on the screen.
                 No collider: it hangs flat on the wall. */}
